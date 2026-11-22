@@ -4,27 +4,34 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 authors = ["SSIT2051"]
-description = "Unified EssentialsX + LuckPerms plugin for PumpkinMC"
+description = "Unified EssentialsX + LuckPerms plugin for PumpkinMC (WASM component)"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-pumpkin-plugin-api = "0.1.0-dev"
+pumpkin-plugin-api = "0.2.1"
 tracing = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-config = { version = "0.14", features = ["toml", "yaml"] }
-sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "mysql", "postgres", "chrono", "uuid"] }
-redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
-tokio = { version = "1.0", features = ["full"] }
-dashmap = "5.0"
-anyhow = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1.0", features = ["serde", "v4"] }
-regex = "1.0"
-async-trait = "0.1"
-lazy_static = "1.4"
+config = { version = "0.14", features = ["toml", "yaml"], default-features = false }
+toml = "0.8"
+serde_yaml = "0.9"
+thiserror = "1.0"
+fs2 = { version = "0.4", optional = true }
+rusqlite = { version = "0.31", features = ["bundled"], optional = true }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], optional = true }
+uuid = { version = "1.0", features = ["serde", "v4"], optional = true }
+
+# Force tokio to use only WASM-compatible features for wasm32-wasip2 target
+[target.wasm32-wasip2.dependencies]
+tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time"], default-features = false }
+
+[features]
+default = []
+sqlite = ["rusqlite"]
+http = ["reqwest", "uuid"]
+file-locking = ["fs2"]
 
 [profile.release]
 lto = true
