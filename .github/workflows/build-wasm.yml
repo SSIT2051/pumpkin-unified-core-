@@ -1,0 +1,28 @@
+name: Build WASM Plugin
+
+on:
+  push:
+    branches: [master, main, wasm-official-rebuild]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+      - uses: Swatinem/rust-cache@v2
+      - name: Build plugin (wasm32-wasip2, WASI 0.2)
+        working-directory: pumpkin-unified-core
+        run: cargo build --release --target wasm32-wasip2
+      - name: Run unit tests (host, with file-locking)
+        working-directory: pumpkin-unified-core
+        run: cargo test --target x86_64-unknown-linux-gnu --features file-locking
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pumpkin-unified-core.wasm
+          path: pumpkin-unified-core/target/wasm32-wasip2/release/pumpkin_unified_core.wasm
