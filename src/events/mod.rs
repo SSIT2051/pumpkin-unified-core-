@@ -1,8 +1,5 @@
 use crate::utils::macros::*;
-use pumpkin_plugin_api::{
-    event::EventHandler,
-    context::Context,
-};
+use pumpkin_plugin_api::{context::Context, event::EventHandler};
 use std::sync::Arc;
 
 pub struct EventModule {

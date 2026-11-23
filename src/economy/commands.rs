@@ -14,7 +14,7 @@ pub fn register(module: Arc<EconomyModule>, context: &mut Context) {
     let balance_cmd = Command::new("balance")
         .alias("bal")
         .alias("money")
-        .permission("essentials.balance")
+        .permission("pumpkin-unified-core.balance")
         .description("Check your balance")
         .handler(async_handler!(move |sender, _server, args| {
             let target = if args.is_empty() {
@@ -46,7 +46,7 @@ pub fn register(module: Arc<EconomyModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let pay_cmd = Command::new("pay")
-        .permission("essentials.pay")
+        .permission("pumpkin-unified-core.pay")
         .description("Pay another player")
         .argument("player")
         .argument("amount")
@@ -84,7 +84,7 @@ pub fn register(module: Arc<EconomyModule>, context: &mut Context) {
     let module_clone = module.clone();
     let baltop_cmd = Command::new("baltop")
         .alias("balancetop")
-        .permission("essentials.balance")
+        .permission("pumpkin-unified-core.balance")
         .description("Show top balances")
         .argument("page")
         .handler(async_handler!(move |sender, _server, args| {
@@ -105,11 +105,11 @@ pub fn register(module: Arc<EconomyModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let eco_cmd = Command::new("eco")
-        .permission("essentials.eco")
+        .permission("pumpkin-unified-core.eco")
         .description("Economy admin commands")
         .subcommand(
             Command::new("give")
-                .permission("essentials.eco.give")
+                .permission("pumpkin-unified-core.eco.give")
                 .argument("player")
                 .argument("amount")
                 .handler(async_handler!(move |sender, server, args| {
@@ -130,7 +130,7 @@ pub fn register(module: Arc<EconomyModule>, context: &mut Context) {
         )
         .subcommand(
             Command::new("take")
-                .permission("essentials.eco.take")
+                .permission("pumpkin-unified-core.eco.take")
                 .argument("player")
                 .argument("amount")
                 .handler(async_handler!(move |sender, server, args| {
@@ -151,7 +151,7 @@ pub fn register(module: Arc<EconomyModule>, context: &mut Context) {
         )
         .subcommand(
             Command::new("set")
-                .permission("essentials.eco.set")
+                .permission("pumpkin-unified-core.eco.set")
                 .argument("player")
                 .argument("amount")
                 .handler(async_handler!(move |sender, server, args| {

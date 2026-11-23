@@ -11,50 +11,66 @@ lazy_static::lazy_static! {
 
 pub fn parse_duration(input: &str) -> Result<Duration> {
     let input = input.trim().to_lowercase();
-    
+
     if input.is_empty() {
         return Err(anyhow::anyhow!("Empty duration string"));
     }
-    
-    let caps = DURATION_REGEX.captures(&input)
+
+    let caps = DURATION_REGEX
+        .captures(&input)
         .ok_or_else(|| anyhow::anyhow!("Invalid duration format: {}", input))?;
-    
-    let days = caps.get(1).and_then(|m| m.as_str().parse::<i64>().ok()).unwrap_or(0);
-    let hours = caps.get(2).and_then(|m| m.as_str().parse::<i64>().ok()).unwrap_or(0);
-    let minutes = caps.get(3).and_then(|m| m.as_str().parse::<i64>().ok()).unwrap_or(0);
-    let seconds = caps.get(4).and_then(|m| m.as_str().parse::<i64>().ok()).unwrap_or(0);
-    
+
+    let days = caps
+        .get(1)
+        .and_then(|m| m.as_str().parse::<i64>().ok())
+        .unwrap_or(0);
+    let hours = caps
+        .get(2)
+        .and_then(|m| m.as_str().parse::<i64>().ok())
+        .unwrap_or(0);
+    let minutes = caps
+        .get(3)
+        .and_then(|m| m.as_str().parse::<i64>().ok())
+        .unwrap_or(0);
+    let seconds = caps
+        .get(4)
+        .and_then(|m| m.as_str().parse::<i64>().ok())
+        .unwrap_or(0);
+
     if days == 0 && hours == 0 && minutes == 0 && seconds == 0 {
         return Err(anyhow::anyhow!("Duration must be greater than 0"));
     }
-    
-    Ok(Duration::days(days) + Duration::hours(hours) + Duration::minutes(minutes) + Duration::seconds(seconds))
+
+    Ok(Duration::days(days)
+        + Duration::hours(hours)
+        + Duration::minutes(minutes)
+        + Duration::seconds(seconds))
 }
 
 pub fn format_duration(duration: Duration) -> String {
     let mut parts = Vec::new();
     let total_seconds = duration.num_seconds();
-    
+
     let days = total_seconds / 86400;
     if days > 0 {
         parts.push(format!("{}d", days));
     }
-    
+
     let hours = (total_seconds % 86400) / 3600;
     if hours > 0 {
         parts.push(format!("{}h", hours));
     }
-    
+
     let minutes = (total_seconds % 3600) / 60;
     if minutes > 0 {
         parts.push(format!("{}m", minutes));
     }
-    
+
     let seconds = total_seconds % 60;
     if seconds > 0 || parts.is_empty() {
         parts.push(format!("{}s", seconds));
     }
-    
+
     parts.join(" ")
 }
 

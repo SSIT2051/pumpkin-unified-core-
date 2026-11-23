@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
     let module_clone = module.clone();
     let afk_cmd = Command::new("afk")
-        .permission("essentials.afk")
+        .permission("pumpkin-unified-core.afk")
         .description("Toggle AFK status")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -37,7 +37,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let rules_cmd = Command::new("rules")
-        .permission("essentials.rules")
+        .permission("pumpkin-unified-core.rules")
         .description("Show server rules")
         .handler(async_handler!(move |sender, _server, _args| {
             sender.send_message(&format_text("&6&l--- Server Rules ---"));
@@ -51,7 +51,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let motd_cmd = Command::new("motd")
-        .permission("essentials.motd")
+        .permission("pumpkin-unified-core.motd")
         .description("Show message of the day")
         .handler(async_handler!(move |sender, _server, _args| {
             sender.send_message(&format_text("&6&l--- MOTD ---"));
@@ -64,7 +64,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
     let module_clone = module.clone();
     let list_cmd = Command::new("list")
         .alias("who")
-        .permission("essentials.list")
+        .permission("pumpkin-unified-core.list")
         .description("List online players")
         .handler(async_handler!(move |sender, server, _args| {
             let players = server.get_online_players();
@@ -80,7 +80,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let whois_cmd = Command::new("whois")
-        .permission("essentials.whois")
+        .permission("pumpkin-unified-core.whois")
         .description("Get player info")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -102,7 +102,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let speed_cmd = Command::new("speed")
-        .permission("essentials.speed")
+        .permission("pumpkin-unified-core.speed")
         .description("Set player speed")
         .argument("player")
         .argument("speed")
@@ -135,7 +135,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let compass_cmd = Command::new("compass")
-        .permission("essentials.compass")
+        .permission("pumpkin-unified-core.compass")
         .description("Get a compass pointing to spawn")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -148,7 +148,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let top_cmd = Command::new("top")
-        .permission("essentials.top")
+        .permission("pumpkin-unified-core.top")
         .description("Teleport to top block")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -164,7 +164,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let back_cmd = Command::new("back")
-        .permission("essentials.back")
+        .permission("pumpkin-unified-core.back")
         .description("Teleport to previous location")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -176,7 +176,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let seen_cmd = Command::new("seen")
-        .permission("essentials.seen")
+        .permission("pumpkin-unified-core.seen")
         .description("See when a player was last online")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -194,7 +194,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let repair_cmd = Command::new("repair")
-        .permission("essentials.repair")
+        .permission("pumpkin-unified-core.repair")
         .description("Repair held item")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -213,7 +213,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let disposal_cmd = Command::new("disposal")
-        .permission("essentials.disposal")
+        .permission("pumpkin-unified-core.disposal")
         .description("Open a disposal inventory")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -226,7 +226,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
     let module_clone = module.clone();
     let workbench_cmd = Command::new("workbench")
         .alias("wb")
-        .permission("essentials.workbench")
+        .permission("pumpkin-unified-core.workbench")
         .description("Open a crafting table")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -238,7 +238,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let anvil_cmd = Command::new("anvil")
-        .permission("essentials.anvil")
+        .permission("pumpkin-unified-core.anvil")
         .description("Open an anvil")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -251,7 +251,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
     let module_clone = module.clone();
     let enderchest_cmd = Command::new("enderchest")
         .alias("echest")
-        .permission("essentials.enderchest")
+        .permission("pumpkin-unified-core.enderchest")
         .description("Open ender chest")
         .argument("player")
         .handler(async_handler!(move |sender, _server, _args| {
@@ -264,7 +264,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let weather_cmd = Command::new("weather")
-        .permission("essentials.weather")
+        .permission("pumpkin-unified-core.weather")
         .description("Change weather")
         .argument("type")
         .argument("duration")
@@ -292,7 +292,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let time_cmd = Command::new("time")
-        .permission("essentials.time")
+        .permission("pumpkin-unified-core.time")
         .description("Change time")
         .argument("value")
         .handler(async_handler!(move |sender, server, args| {
@@ -323,7 +323,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let butcher_cmd = Command::new("butcher")
-        .permission("essentials.butcher")
+        .permission("pumpkin-unified-core.butcher")
         .description("Kill nearby mobs")
         .argument("radius")
         .handler(async_handler!(move |sender, _server, args| {
@@ -336,7 +336,7 @@ pub fn register(module: Arc<UtilityModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let extinguish_cmd = Command::new("extinguish")
-        .permission("essentials.extinguish")
+        .permission("pumpkin-unified-core.extinguish")
         .description("Extinguish fires in radius")
         .argument("radius")
         .handler(async_handler!(move |sender, _server, args| {

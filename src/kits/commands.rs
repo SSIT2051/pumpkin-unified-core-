@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub fn register(module: Arc<KitsModule>, context: &mut Context) {
     let module_clone = module.clone();
     let kit_cmd = Command::new("kit")
-        .permission("essentials.kit")
+        .permission("pumpkin-unified-core.kit")
         .description("Get a kit")
         .argument("kit")
         .handler(async_handler!(move |sender, server, args| {
@@ -48,7 +48,7 @@ pub fn register(module: Arc<KitsModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let kits_cmd = Command::new("kits")
-        .permission("essentials.kits")
+        .permission("pumpkin-unified-core.kits")
         .description("List available kits")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -79,7 +79,7 @@ pub fn register(module: Arc<KitsModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let createkit_cmd = Command::new("createkit")
-        .permission("essentials.createkit")
+        .permission("pumpkin-unified-core.createkit")
         .description("Create a kit from your inventory")
         .argument("name")
         .argument("display_name")
@@ -106,7 +106,7 @@ pub fn register(module: Arc<KitsModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let showkit_cmd = Command::new("showkit")
-        .permission("essentials.showkit")
+        .permission("pumpkin-unified-core.showkit")
         .description("Show kit contents")
         .argument("kit")
         .handler(async_handler!(move |sender, _server, args| {

@@ -35,7 +35,10 @@ impl WarpsModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::WarpsConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::WarpsConfig>,
+    ) -> Self {
         Self {
             storage,
             cache: Arc::new(DashMap::new()),
@@ -47,10 +50,11 @@ impl WarpsModule {
         if let Some(cached) = self.cache.get(name) {
             return Ok(Some(cached.clone()));
         }
-        
+
         let key = name.to_lowercase();
         if let Some(data) = self.storage.get("warps", &key).await? {
-            let warp_data: crate::storage::SerializedData<Warp> = crate::storage::SerializedData::deserialize(&data)?;
+            let warp_data: crate::storage::SerializedData<Warp> =
+                crate::storage::SerializedData::deserialize(&data)?;
             self.cache.insert(key.clone(), warp_data.data.clone());
             return Ok(Some(warp_data.data));
         }
@@ -77,7 +81,8 @@ impl WarpsModule {
         let mut warps = Vec::new();
         for key in keys {
             if let Some(data) = self.storage.get("warps", &key).await? {
-                let warp_data: crate::storage::SerializedData<Warp> = crate::storage::SerializedData::deserialize(&data)?;
+                let warp_data: crate::storage::SerializedData<Warp> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 warps.push(warp_data.data);
             }
         }

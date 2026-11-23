@@ -51,7 +51,7 @@ impl TpaModule {
         if !self.toggles.get(&to).copied().unwrap_or(true) {
             return Err(anyhow::anyhow!("Player has TPA toggled off"));
         }
-        
+
         let now = chrono::Utc::now().timestamp();
         let request = TpaRequest {
             from,
@@ -60,7 +60,7 @@ impl TpaModule {
             created_at: now,
             expires_at: now + self.config.request_timeout as i64,
         };
-        
+
         self.requests.insert(to, request);
         Ok(())
     }

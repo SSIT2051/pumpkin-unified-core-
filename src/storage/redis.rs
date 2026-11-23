@@ -1,7 +1,7 @@
 use crate::storage::Storage;
 use crate::utils::macros::*;
 use anyhow::Result;
-use redis::{aio::ConnectionManager, Client, AsyncCommands};
+use redis::{AsyncCommands, Client, aio::ConnectionManager};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -13,7 +13,7 @@ impl RedisStorage {
     pub async fn new(config: &crate::config::RedisConfig) -> Result<Self> {
         let client = Client::open(config.url.as_str())?;
         let conn = ConnectionManager::new(client).await?;
-        
+
         Ok(Self {
             conn: Arc::new(conn),
         })
@@ -28,12 +28,13 @@ impl RedisStorage {
 impl Storage for RedisStorage {
     async fn init(&self) -> Result<()> {
         let mut conn = (*self.conn).clone();
-        redis::cmd("PING").query_async::<_, String>(&mut conn).await?;
+        redis::cmd("PING")
+            .query_async::<_, String>(&mut conn)
+            .await?;
         Ok(())
     }
 
-    async fn shutdown(&self) {
-    }
+    async fn shutdown(&self) {}
 
     async fn get(&self, table: &str, key: &str) -> Result<Option<Vec<u8>>> {
         let mut conn = (*self.conn).clone();
@@ -63,14 +64,33 @@ impl Storage for RedisStorage {
         let mut conn = (*self.conn).clone();
         let search_pattern = self.key(table, pattern);
         let keys: Vec<String> = conn.keys(search_pattern).await?;
-        Ok(keys.into_iter().map(|k| k.strip_prefix(&format!("puc:{}:", table)).unwrap_or(&k).to_string()).collect())
+        Ok(keys
+            .into_iter()
+            .map(|k| {
+                k.strip_prefix(&format!("puc:{}:", table))
+                    .unwrap_or(&k)
+                    .to_string()
+            })
+            .collect())
     }
 
-    async fn query(&self, _sql: &str, _params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<Vec<HashMap<String, serde_json::Value>>> {
-        Err(anyhow::anyhow!("Raw SQL queries not supported in Redis backend"))
+    async fn query(
+        &self,
+        _sql: &str,
+        _params: &[&dyn sqlx::Encode<'_, sqlx::Any>],
+    ) -> Result<Vec<HashMap<String, serde_json::Value>>> {
+        Err(anyhow::anyhow!(
+            "Raw SQL queries not supported in Redis backend"
+        ))
     }
 
-    async fn execute(&self, _sql: &str, _params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<u64> {
-        Err(anyhow::anyhow!("Raw SQL execute not supported in Redis backend"))
+    async fn execute(
+        &self,
+        _sql: &str,
+        _params: &[&dyn sqlx::Encode<'_, sqlx::Any>],
+    ) -> Result<u64> {
+        Err(anyhow::anyhow!(
+            "Raw SQL execute not supported in Redis backend"
+        ))
     }
 }

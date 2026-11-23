@@ -13,11 +13,11 @@ use uuid::Uuid;
 pub fn register(module: Arc<PermissionsModule>, context: &mut Context) {
     let lp_cmd = Command::new("lp")
         .alias("luckperms")
-        .permission("luckperms.user.info")
+        .permission("pumpkin-unified-core.lp.user.info")
         .description("LuckPerms commands")
         .subcommand(
             Command::new("user")
-                .permission("luckperms.user.info")
+                .permission("pumpkin-unified-core.lp.user.info")
                 .subcommand(
                     Command::new("info")
                         .argument("user")
@@ -43,7 +43,7 @@ pub fn register(module: Arc<PermissionsModule>, context: &mut Context) {
                 )
                 .subcommand(
                     Command::new("permission")
-                        .permission("luckperms.user.permission")
+                        .permission("pumpkin-unified-core.lp.user.permission")
                         .subcommand(
                             Command::new("set")
                                 .argument("user")
@@ -98,7 +98,7 @@ pub fn register(module: Arc<PermissionsModule>, context: &mut Context) {
                 )
                 .subcommand(
                     Command::new("parent")
-                        .permission("luckperms.user.parent")
+                        .permission("pumpkin-unified-core.lp.user.parent")
                         .subcommand(
                             Command::new("add")
                                 .argument("user")
@@ -123,7 +123,7 @@ pub fn register(module: Arc<PermissionsModule>, context: &mut Context) {
         )
         .subcommand(
             Command::new("group")
-                .permission("luckperms.group.info")
+                .permission("pumpkin-unified-core.lp.group.info")
                 .subcommand(
                     Command::new("list")
                         .handler(async_handler!(move |sender, _server, _args| {
@@ -139,7 +139,7 @@ pub fn register(module: Arc<PermissionsModule>, context: &mut Context) {
         )
         .subcommand(
             Command::new("track")
-                .permission("luckperms.track.listtracks")
+                .permission("pumpkin-unified-core.lp.track.listtracks")
                 .subcommand(
                     Command::new("list")
                         .handler(async_handler!(move |sender, _server, _args| {
@@ -155,7 +155,7 @@ pub fn register(module: Arc<PermissionsModule>, context: &mut Context) {
         )
         .subcommand(
             Command::new("reload")
-                .permission("luckperms.reloadconfig")
+                .permission("pumpkin-unified-core.lp.reloadconfig")
                 .handler(async_handler!(move |sender, _server, _args| {
                     sender.send_message(&format_text("&aReloading configuration..."));
                     Ok(())

@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub fn register(module: Arc<TpaModule>, context: &mut Context) {
     let module_clone = module.clone();
     let tpa_cmd = Command::new("tpa")
-        .permission("essentials.tpa")
+        .permission("pumpkin-unified-core.tpa")
         .description("Request to teleport to a player")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -39,7 +39,7 @@ pub fn register(module: Arc<TpaModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let tpahere_cmd = Command::new("tpahere")
-        .permission("essentials.tpahere")
+        .permission("pumpkin-unified-core.tpahere")
         .description("Request a player to teleport to you")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -66,7 +66,7 @@ pub fn register(module: Arc<TpaModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let tpaccept_cmd = Command::new("tpaccept")
-        .permission("essentials.tpaccept")
+        .permission("pumpkin-unified-core.tpaccept")
         .description("Accept a teleport request")
         .handler(async_handler!(move |sender, server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -107,7 +107,7 @@ pub fn register(module: Arc<TpaModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let tpdeny_cmd = Command::new("tpdeny")
-        .permission("essentials.tpdeny")
+        .permission("pumpkin-unified-core.tpdeny")
         .description("Deny a teleport request")
         .handler(async_handler!(move |sender, server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -130,7 +130,7 @@ pub fn register(module: Arc<TpaModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let tptoggle_cmd = Command::new("tptoggle")
-        .permission("essentials.tptoggle")
+        .permission("pumpkin-unified-core.tptoggle")
         .description("Toggle teleport requests")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;

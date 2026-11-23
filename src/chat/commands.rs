@@ -13,7 +13,7 @@ pub fn register(module: Arc<ChatModule>, context: &mut Context) {
     let msg_cmd = Command::new("msg")
         .alias("tell")
         .alias("w")
-        .permission("essentials.msg")
+        .permission("pumpkin-unified-core.msg")
         .description("Send a private message")
         .argument("player")
         .argument("message")
@@ -38,7 +38,7 @@ pub fn register(module: Arc<ChatModule>, context: &mut Context) {
     let module_clone = module.clone();
     let r_cmd = Command::new("r")
         .alias("reply")
-        .permission("essentials.reply")
+        .permission("pumpkin-unified-core.reply")
         .description("Reply to last private message")
         .argument("message")
         .handler(async_handler!(move |sender, _server, args| {
@@ -51,11 +51,11 @@ pub fn register(module: Arc<ChatModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let mail_cmd = Command::new("mail")
-        .permission("essentials.mail")
+        .permission("pumpkin-unified-core.mail")
         .description("Manage offline messages")
         .subcommand(
             Command::new("send")
-                .permission("essentials.mail.send")
+                .permission("pumpkin-unified-core.mail.send")
                 .argument("player")
                 .argument("message")
                 .handler(async_handler!(move |sender, _server, args| {
@@ -68,7 +68,7 @@ pub fn register(module: Arc<ChatModule>, context: &mut Context) {
         )
         .subcommand(
             Command::new("read")
-                .permission("essentials.mail")
+                .permission("pumpkin-unified-core.mail")
                 .handler(async_handler!(move |sender, _server, _args| {
                     sender.send_message(&format_text("&cMail read not fully implemented"));
                     Ok(())
@@ -81,7 +81,7 @@ pub fn register(module: Arc<ChatModule>, context: &mut Context) {
     let module_clone = module.clone();
     let broadcast_cmd = Command::new("broadcast")
         .alias("bc")
-        .permission("essentials.broadcast")
+        .permission("pumpkin-unified-core.broadcast")
         .description("Broadcast a message to all players")
         .argument("message")
         .handler(async_handler!(move |sender, server, args| {
@@ -99,7 +99,7 @@ pub fn register(module: Arc<ChatModule>, context: &mut Context) {
     let module_clone = module.clone();
     let broadcastworld_cmd = Command::new("broadcastworld")
         .alias("bcw")
-        .permission("essentials.broadcastworld")
+        .permission("pumpkin-unified-core.broadcastworld")
         .description("Broadcast a message to players in the same world")
         .argument("message")
         .handler(async_handler!(move |sender, server, args| {

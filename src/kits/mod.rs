@@ -57,7 +57,10 @@ impl KitsModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::KitsConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::KitsConfig>,
+    ) -> Self {
         Self {
             storage,
             kits: Arc::new(DashMap::new()),
@@ -70,7 +73,8 @@ impl KitsModule {
         let keys = self.storage.keys("kits", "%").await?;
         for key in keys {
             if let Some(data) = self.storage.get("kits", &key).await? {
-                let kit_data: crate::storage::SerializedData<Kit> = crate::storage::SerializedData::deserialize(&data)?;
+                let kit_data: crate::storage::SerializedData<Kit> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 self.kits.insert(key, kit_data.data);
             }
         }
@@ -115,11 +119,14 @@ impl KitsModule {
 
     pub fn set_cooldown(&self, uuid: Uuid, kit_name: &str) {
         let key = format!("{}:{}", uuid, kit_name.to_lowercase());
-        self.cooldowns.insert(key, KitCooldown {
-            uuid,
-            kit_name: kit_name.to_string(),
-            last_used: chrono::Utc::now().timestamp(),
-        });
+        self.cooldowns.insert(
+            key,
+            KitCooldown {
+                uuid,
+                kit_name: kit_name.to_string(),
+                last_used: chrono::Utc::now().timestamp(),
+            },
+        );
     }
 
     pub fn register_commands(&self, context: &mut pumpkin_plugin_api::context::Context) {
