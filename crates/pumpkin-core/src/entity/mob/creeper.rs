@@ -317,7 +317,7 @@ impl Mob for CreeperEntity {
                 &pos,
                 1.0,
                 rand::random::<f32>() * 0.4 + 0.8,
-            );
+            )
 
             self.ignited.store(true, Ordering::Relaxed);
             entity.set_synced_data(pumpkin_data::tracked_data::creeper::IS_IGNITED, true);
@@ -379,7 +379,7 @@ impl CreeperEntity {
     }
 
     pub fn set_fuse(&self, fuse: i32) {
-        self.fuse_time.store(fuse, Ordering::Relaxed);
+        self.fuse_time.store(fuse, Ordering::Relaxed)
     }
 
     pub fn get_explosion_radius(&self) -> i32 {
@@ -387,7 +387,7 @@ impl CreeperEntity {
     }
 
     pub fn set_explosion_radius(&self, radius: i32) {
-        self.explosion_radius.store(radius, Ordering::Relaxed);
+        self.explosion_radius.store(radius, Ordering::Relaxed)
     }
 
     pub fn get_swelling(&self, partial_tick: f32) -> f32 {
