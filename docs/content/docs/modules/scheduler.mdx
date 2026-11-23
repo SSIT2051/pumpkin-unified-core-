@@ -1,0 +1,157 @@
+---
+title: "Scheduler Module (AutoScheduler)"
+description: "Cron-based scheduled tasks with placeholders"
+---
+
+# Scheduler Module
+
+**Replaces:** CommandTimer  
+**Config Section:** `scheduler`  
+**Permission Prefix:** `pumpkin-unified-core.scheduler`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/scheduler create <name> <cron> <command>` | `pumpkin-unified-core.scheduler.create` | Create task |
+| `/scheduler remove <name>` | `pumpkin-unified-core.scheduler.remove` | Remove task |
+| `/scheduler list` | `pumpkin-unified-core.scheduler.list` | List tasks |
+| `/scheduler enable <name>` | `pumpkin-unified-core.scheduler.enable` | Enable task |
+| `/scheduler disable <name>` | `pumpkin-unified-core.scheduler.disable` | Disable task |
+| `/scheduler run <name>` | `pumpkin-unified-core.scheduler.run` | Run task now |
+| `/scheduler edit <name> <cron> <command>` | `pumpkin-unified-core.scheduler.edit` | Edit task |
+| `/scheduler reload` | `pumpkin-unified-core.scheduler.reload` | Reload from storage |
+
+## Configuration
+
+```toml
+[scheduler]
+enabled = true                 # Enable scheduler module
+```
+
+## Cron Format
+
+Standard 5-field cron expression:
+```
+* * * * *
+| | | | └─ Day of week (0-7) (Sun=0 or 7)
+| | | └──── Month (1-12)
+| | └────── Day of month (1-31)
+| └──────── Hour (0-23)
+└────────── Minute (0-59)
+```
+
+## Examples
+
+```bash
+# Daily backup at 3:00 AM
+/scheduler create backup "0 3 * * *" "save-all"
+
+# Weekly restart Sunday 4:00 AM
+/scheduler create restart "0 4 * * 0" "restart"
+
+# Every 6 hours
+/scheduler create save "0 */6 * * *" "save-all"
+
+# Every hour at minute 30
+/scheduler create hourly "30 * * * *" "say Hourly announcement"
+
+# Run once at specific time (one-time)
+/scheduler create onetime "0 12 25 12 *" "say Merry Christmas!"
+
+# List tasks
+/scheduler list
+# Output:
+# backup | Enabled | Last: 2024-01-15 03:00:00 | Next: 2024-01-16 03:00:00 | save-all
+# restart | Enabled | Last: 2024-01-14 04:00:00 | Next: 2024-01-21 04:00:00 | restart
+
+# Enable/disable
+/scheduler disable backup
+/scheduler enable backup
+
+# Run immediately
+/scheduler run backup
+# Output: Executed scheduled task: backup
+
+# Edit task
+/scheduler edit backup "0 4 * * *" "save-all"
+
+# Reload from storage
+/scheduler reload
+```
+
+## Placeholders
+
+Commands support placeholders:
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{server}` | Server name |
+| `{time}` | Current time (HH:MM:SS) |
+| `{date}` | Current date (YYYY-MM-DD) |
+| `{online_players}` | Online player count |
+
+Example:
+```bash
+/scheduler create announce "0 * * * *" "broadcast Server: {server} | Online: {online_players} | Time: {time}"
+```
+
+## One-Time Tasks
+
+Tasks with `one_time` flag run once then auto-remove:
+```bash
+# Not directly supported via command, use API or edit storage
+# Set one_time = true in storage for one-time execution
+```
+
+## Storage
+
+Tasks stored in `scheduler_tasks` table:
+- `name` - Unique identifier
+- `cron` - Cron expression
+- `command` - Command to execute
+- `enabled` - Boolean
+- `last_run` - Unix timestamp
+- `next_run` - Unix timestamp
+- `one_time` - Boolean
+- `created_at` - Unix timestamp
+
+## Permissions Setup
+
+```bash
+# Staff - manage tasks
+/lp group mod permission set pumpkin-unified-core.scheduler.create true
+/lp group mod permission set pumpkin-unified-core.scheduler.remove true
+/lp group mod permission set pumpkin-unified-core.scheduler.list true
+/lp group mod permission set pumpkin-unified-core.scheduler.enable true
+/lp group mod permission set pumpkin-unified-core.scheduler.disable true
+/lp group mod permission set pumpkin-unified-core.scheduler.run true
+/lp group mod permission set pumpkin-unified-core.scheduler.edit true
+/lp group mod permission set pumpkin-unified-core.scheduler.reload true
+```
+
+## Common Cron Patterns
+
+| Pattern | Description |
+|---------|-------------|
+| `0 * * * *` | Every hour |
+| `0 */6 * * *` | Every 6 hours |
+| `0 0 * * *` | Daily at midnight |
+| `0 3 * * *` | Daily at 3 AM |
+| `0 4 * * 0` | Weekly Sunday 4 AM |
+| `0 0 1 * *` | Monthly 1st at midnight |
+| `*/15 * * * *` | Every 15 minutes |
+| `0 0 * * 1-5` | Weekdays at midnight |
+
+## Notes
+
+- Tasks run as console (full permissions)
+- Cron parsed using standard library
+- Timezone: UTC (server time)
+- Disabled tasks don't run but persist
+- Reload restarts scheduler
+
+## Next
+
+- [Player Tracker Module](/modules/playertracker)
+- [Configuration](/getting-started/configuration)

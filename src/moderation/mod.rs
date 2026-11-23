@@ -59,7 +59,10 @@ impl ModerationModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::ModerationConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::ModerationConfig>,
+    ) -> Self {
         Self {
             storage,
             bans: Arc::new(DashMap::new()),
@@ -72,7 +75,8 @@ impl ModerationModule {
     pub async fn load_data(&self) -> Result<()> {
         for key in self.storage.keys("bans", "%").await? {
             if let Some(data) = self.storage.get("bans", &key).await? {
-                let entry: crate::storage::SerializedData<BanEntry> = crate::storage::SerializedData::deserialize(&data)?;
+                let entry: crate::storage::SerializedData<BanEntry> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 if entry.data.active {
                     self.bans.insert(entry.data.uuid, entry.data);
                 }
@@ -80,7 +84,8 @@ impl ModerationModule {
         }
         for key in self.storage.keys("mutes", "%").await? {
             if let Some(data) = self.storage.get("mutes", &key).await? {
-                let entry: crate::storage::SerializedData<MuteEntry> = crate::storage::SerializedData::deserialize(&data)?;
+                let entry: crate::storage::SerializedData<MuteEntry> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 if entry.data.active {
                     self.mutes.insert(entry.data.uuid, entry.data);
                 }
@@ -88,7 +93,8 @@ impl ModerationModule {
         }
         for key in self.storage.keys("jails", "%").await? {
             if let Some(data) = self.storage.get("jails", &key).await? {
-                let entry: crate::storage::SerializedData<JailEntry> = crate::storage::SerializedData::deserialize(&data)?;
+                let entry: crate::storage::SerializedData<JailEntry> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 if entry.data.active {
                     self.jails.insert(entry.data.uuid, entry.data);
                 }
@@ -98,24 +104,46 @@ impl ModerationModule {
     }
 
     pub fn is_banned(&self, uuid: Uuid) -> Option<BanEntry> {
-        self.bans.get(&uuid).filter(|b| {
-            b.active && b.expires_at.map_or(true, |e| e > chrono::Utc::now().timestamp())
-        }).map(|b| b.clone())
+        self.bans
+            .get(&uuid)
+            .filter(|b| {
+                b.active
+                    && b.expires_at
+                        .map_or(true, |e| e > chrono::Utc::now().timestamp())
+            })
+            .map(|b| b.clone())
     }
 
     pub fn is_muted(&self, uuid: Uuid) -> Option<MuteEntry> {
-        self.mutes.get(&uuid).filter(|m| {
-            m.active && m.expires_at.map_or(true, |e| e > chrono::Utc::now().timestamp())
-        }).map(|m| m.clone())
+        self.mutes
+            .get(&uuid)
+            .filter(|m| {
+                m.active
+                    && m.expires_at
+                        .map_or(true, |e| e > chrono::Utc::now().timestamp())
+            })
+            .map(|m| m.clone())
     }
 
     pub fn is_jailed(&self, uuid: Uuid) -> Option<JailEntry> {
-        self.jails.get(&uuid).filter(|j| {
-            j.active && j.expires_at.map_or(true, |e| e > chrono::Utc::now().timestamp())
-        }).map(|j| j.clone())
+        self.jails
+            .get(&uuid)
+            .filter(|j| {
+                j.active
+                    && j.expires_at
+                        .map_or(true, |e| e > chrono::Utc::now().timestamp())
+            })
+            .map(|j| j.clone())
     }
 
-    pub async fn ban(&self, target: Uuid, name: String, reason: String, by: Uuid, duration: Option<u64>) -> Result<()> {
+    pub async fn ban(
+        &self,
+        target: Uuid,
+        name: String,
+        reason: String,
+        by: Uuid,
+        duration: Option<u64>,
+    ) -> Result<()> {
         let expires_at = duration.map(|d| chrono::Utc::now().timestamp() + d as i64);
         let entry = BanEntry {
             uuid: target,
@@ -141,7 +169,14 @@ impl ModerationModule {
         Ok(())
     }
 
-    pub async fn mute(&self, target: Uuid, name: String, reason: String, by: Uuid, duration: Option<u64>) -> Result<()> {
+    pub async fn mute(
+        &self,
+        target: Uuid,
+        name: String,
+        reason: String,
+        by: Uuid,
+        duration: Option<u64>,
+    ) -> Result<()> {
         let expires_at = duration.map(|d| chrono::Utc::now().timestamp() + d as i64);
         let entry = MuteEntry {
             uuid: target,
@@ -153,7 +188,9 @@ impl ModerationModule {
             active: true,
         };
         let data = crate::storage::SerializedData::new(entry.clone()).serialize()?;
-        self.storage.set("mutes", &target.to_string(), &data).await?;
+        self.storage
+            .set("mutes", &target.to_string(), &data)
+            .await?;
         self.mutes.insert(target, entry);
         Ok(())
     }
@@ -162,12 +199,21 @@ impl ModerationModule {
         if let Some(mut entry) = self.mutes.get_mut(&target) {
             entry.active = false;
             let data = crate::storage::SerializedData::new(entry.clone()).serialize()?;
-            self.storage.set("mutes", &target.to_string(), &data).await?;
+            self.storage
+                .set("mutes", &target.to_string(), &data)
+                .await?;
         }
         Ok(())
     }
 
-    pub async fn jail(&self, target: Uuid, name: String, reason: String, by: Uuid, duration: Option<u64>) -> Result<()> {
+    pub async fn jail(
+        &self,
+        target: Uuid,
+        name: String,
+        reason: String,
+        by: Uuid,
+        duration: Option<u64>,
+    ) -> Result<()> {
         let expires_at = duration.map(|d| chrono::Utc::now().timestamp() + d as i64);
         let entry = JailEntry {
             uuid: target,
@@ -179,7 +225,9 @@ impl ModerationModule {
             active: true,
         };
         let data = crate::storage::SerializedData::new(entry.clone()).serialize()?;
-        self.storage.set("jails", &target.to_string(), &data).await?;
+        self.storage
+            .set("jails", &target.to_string(), &data)
+            .await?;
         self.jails.insert(target, entry);
         Ok(())
     }
@@ -188,7 +236,9 @@ impl ModerationModule {
         if let Some(mut entry) = self.jails.get_mut(&target) {
             entry.active = false;
             let data = crate::storage::SerializedData::new(entry.clone()).serialize()?;
-            self.storage.set("jails", &target.to_string(), &data).await?;
+            self.storage
+                .set("jails", &target.to_string(), &data)
+                .await?;
         }
         Ok(())
     }

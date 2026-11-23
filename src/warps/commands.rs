@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub fn register(module: Arc<WarpsModule>, context: &mut Context) {
     let module_clone = module.clone();
     let warp_cmd = Command::new("warp")
-        .permission("essentials.warp")
+        .permission("pumpkin-unified-core.warp")
         .description("Teleport to a warp")
         .argument("warp")
         .handler(async_handler!(move |sender, server, args| {
@@ -30,7 +30,7 @@ pub fn register(module: Arc<WarpsModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let setwarp_cmd = Command::new("setwarp")
-        .permission("essentials.setwarp")
+        .permission("pumpkin-unified-core.setwarp")
         .description("Create a warp at your location")
         .argument("warp")
         .handler(async_handler!(move |sender, _server, args| {
@@ -59,7 +59,7 @@ pub fn register(module: Arc<WarpsModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let delwarp_cmd = Command::new("delwarp")
-        .permission("essentials.delwarp")
+        .permission("pumpkin-unified-core.delwarp")
         .description("Delete a warp")
         .argument("warp")
         .handler(async_handler!(move |sender, _server, args| {
@@ -73,7 +73,7 @@ pub fn register(module: Arc<WarpsModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let warps_cmd = Command::new("warps")
-        .permission("essentials.warps")
+        .permission("pumpkin-unified-core.warps")
         .description("List all warps")
         .handler(async_handler!(move |sender, _server, _args| {
             let warps = module_clone.list_warps().await?;

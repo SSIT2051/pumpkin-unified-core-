@@ -1,0 +1,143 @@
+---
+title: "Kits Module"
+description: "Item kits with cooldowns, permissions, and kit signs"
+---
+
+# Kits Module
+
+**Replaces:** EssentialsX Kits  
+**Config Section:** `kits`  
+**Permission Prefix:** `pumpkin-unified-core.kit`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/kit <name>` | `pumpkin-unified-core.kit` | Claim a kit |
+| `/kits` | `pumpkin-unified-core.kits` | List available kits |
+| `/createkit <name> <display_name>` | `pumpkin-unified-core.createkit` | Create kit from inventory |
+| `/showkit <name>` | `pumpkin-unified-core.showkit` | View kit contents |
+
+## Configuration
+
+```toml
+[kits]
+default_cooldown = 86400      # Default cooldown in seconds (24 hours)
+kit_signs = true              # Enable kit signs
+```
+
+## Kit Permissions
+
+Kits can have individual permissions:
+- Kit permission: `pumpkin-unified-core.kit.<kitname>`
+- Or use global: `pumpkin-unified-core.kit.*`
+
+```bash
+# Create VIP-only kit
+/lp group vip permission set pumpkin-unified-core.kit.vip true
+```
+
+## Examples
+
+```bash
+# List available kits
+/kits
+# Output:
+# - starter (Cooldown: 86400s) - Basic starter kit
+# - vip (Cooldown: 3600s) - VIP daily kit
+# - pvp (Cooldown: 7200s) - PvP gear
+
+# Claim a kit
+/kit starter
+# Output: Received kit: Starter Kit
+
+# View kit contents
+/showkit starter
+# Output:
+# Kit: Starter Kit
+# - diamond_sword x1
+# - bread x32
+# - torch x64
+# Cooldown: 86400s
+
+# Create kit from your inventory
+/createkit pvp "PvP Kit"
+# Output: Kit pvp created
+```
+
+## Kit Signs
+
+When `kit_signs = true`:
+
+1. Place a sign
+2. Line 1: `[Kit]`
+3. Line 2: `<kit name>`
+4. Right-click to claim kit
+
+Requires `pumpkin-unified-core.kit.sign` permission.
+
+## Kit Structure
+
+```toml
+# In storage (auto-managed)
+name: "starter"
+display_name: "Starter Kit"
+items:
+  - item: "diamond_sword"
+    amount: 1
+  - item: "bread"
+    amount: 32
+cooldown: 86400
+permission: "pumpkin-unified-core.kit.starter"
+description: "Basic starter kit for new players"
+```
+
+## Cooldowns
+
+- Per-player, per-kit cooldowns
+- Stored in `kits_cooldowns` table
+- Bypass with `pumpkin-unified-core.kit.bypass.cooldown` (Op)
+- View remaining: `/kit <name>` shows cooldown if active
+
+## Storage
+
+Kits stored in `kits` table:
+- `name` - Kit identifier
+- `display_name` - Display name
+- `items` - Serialized item list
+- `cooldown` - Seconds
+- `permission` - Optional permission node
+- `description` - Optional description
+
+Cooldowns stored in `kit_cooldowns` table:
+- `uuid` - Player UUID
+- `kit` - Kit name
+- `expires_at` - Unix timestamp
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.kit true
+/lp group default permission set pumpkin-unified-core.kits true
+
+# VIP - access to VIP kits
+/lp group vip permission set pumpkin-unified-core.kit.vip true
+/lp group vip permission set pumpkin-unified-core.kit.* true
+
+# Staff - create/manage kits
+/lp group mod permission set pumpkin-unified-core.createkit true
+/lp group mod permission set pumpkin-unified-core.showkit true
+```
+
+## Notes
+
+- Kit items support all vanilla items
+- Enchantments and custom NBT preserved
+- Cooldowns persist across restarts
+- Kit signs work with permissions
+
+## Next
+
+- [Moderation Module](/modules/moderation)
+- [Configuration](/getting-started/configuration)

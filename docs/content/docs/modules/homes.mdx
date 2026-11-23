@@ -1,0 +1,124 @@
+---
+title: "Homes Module"
+description: "Personal teleport points with multiple homes support"
+---
+
+# Homes Module
+
+**Replaces:** EssentialsX Homes  
+**Config Section:** `homes`  
+**Permission Prefix:** `pumpkin-unified-core.home`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/sethome <name>` | `pumpkin-unified-core.sethome` | Set home at current location |
+| `/home <name>` | `pumpkin-unified-core.home` | Teleport to home |
+| `/home <name> <player>` | `pumpkin-unified-core.home.others` | Teleport player to their home |
+| `/delhome <name>` | `pumpkin-unified-core.delhome` | Delete a home |
+| `/homes` | `pumpkin-unified-core.homes` | List your homes |
+
+## Configuration
+
+```toml
+[homes]
+max_homes_default = 3          # Max homes for default group
+max_homes_vip = 10             # Max homes for VIP group (permission: pumpkin-unified-core.homes.limit.10)
+home_cooldown = 5              # Cooldown in seconds
+home_on_death = false          # Teleport to home on death
+```
+
+## Home Limits
+
+Home limits work via permissions:
+- Default: `max_homes_default` (3)
+- VIP: `pumpkin-unified-core.homes.limit.10` → uses `max_homes_vip` (10)
+- Custom: `pumpkin-unified-core.homes.limit.<number>`
+
+```bash
+# Set VIP limit to 10
+/lp group vip permission set pumpkin-unified-core.homes.limit.10 true
+
+# Set custom limit for group
+/lp group mvp permission set pumpkin-unified-core.homes.limit.25 true
+```
+
+## Examples
+
+```bash
+# Set a home
+/sethome base
+# Output: Home base set
+
+# Teleport to home
+/home base
+# Output: Teleported to home: base
+
+# List your homes
+/homes
+# Output:
+# - base (100, 64, 200)
+# - farm (-50, 70, 300)
+# - nether (0, 80, 0) [world: world_nether]
+
+# Delete a home
+/delhome farm
+# Output: Home farm deleted
+
+# Teleport player to their home (admin)
+/home base Steve
+# Output: Teleported Steve to home: base
+```
+
+## Cross-World Homes
+
+Homes support cross-world teleportation:
+- Each home stores its world
+- Teleport handles world changes automatically
+- Works with dimensions (overworld, nether, end)
+
+## Storage
+
+Homes stored in `homes` table:
+- `uuid` - Player UUID
+- `name` - Home name
+- `world` - World name
+- `x, y, z` - Coordinates
+- `yaw, pitch` - Rotation
+- `created_at` - Timestamp
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.sethome true
+/lp group default permission set pumpkin-unified-core.home true
+/lp group default permission set pumpkin-unified-core.delhome true
+/lp group default permission set pumpkin-unified-core.homes true
+
+# VIP - more homes
+/lp group vip permission set pumpkin-unified-core.homes.limit.10 true
+
+# Staff - teleport others
+/lp group mod permission set pumpkin-unified-core.home.others true
+```
+
+## Home on Death
+
+When `home_on_death = true`:
+- Player teleports to first home on death
+- Falls back to spawn if no homes
+- Requires `pumpkin-unified-core.home` permission
+
+## Notes
+
+- Home names are case-insensitive
+- Cooldown applies to `/home` command
+- `/homes` shows coordinates and world
+- Max homes enforced on `/sethome`
+
+## Next
+
+- [TPA Module](/modules/tpa)
+- [Configuration](/getting-started/configuration)

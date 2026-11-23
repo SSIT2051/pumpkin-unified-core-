@@ -1,0 +1,167 @@
+---
+title: "Interactive Blocks Module"
+description: "Block elevators, armor stand pose editor, and command signs"
+---
+
+# Interactive Blocks Module
+
+**Replaces:** Elevator + ArmorStandTools  
+**Config Section:** `interactiveblocks`  
+**Permission Prefix:** `pumpkin-unified-core.interactive`
+
+## Commands
+
+### Elevators
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/elevator create <name>` | `pumpkin-unified-core.interactive.elevator.create` | Create elevator |
+| `/elevator remove <name>` | `pumpkin-unified-core.interactive.elevator.remove` | Remove elevator |
+| `/elevator list` | `pumpkin-unified-core.interactive.elevator.list` | List elevators |
+| `/elevator setfloor <name> <floor> <x> <y> <z>` | `pumpkin-unified-core.interactive.elevator.setfloor` | Add floor |
+| `/elevator setmaterial <name> <material>` | `pumpkin-unified-core.interactive.elevator.setmaterial` | Set elevator block |
+
+### Armor Stands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/armorstand pose <name> <part> <x> <y> <z>` | `pumpkin-unified-core.interactive.armorstand.pose` | Set pose |
+| `/armorstand remove <name>` | `pumpkin-unified-core.interactive.armorstand.remove` | Remove armor stand |
+| `/armorstand list` | `pumpkin-unified-core.interactive.armorstand.list` | List armor stands |
+
+### Command Signs
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/commandsign create <name> <command>` | `pumpkin-unified-core.interactive.commandsign.create` | Create command sign |
+| `/commandsign remove <name>` | `pumpkin-unified-core.interactive.commandsign.remove` | Remove command sign |
+| `/commandsign list` | `pumpkin-unified-core.interactive.commandsign.list` | List command signs |
+
+## Configuration
+
+```toml
+[interactiveblocks]
+elevator_material = "white_wool"    # Default elevator block
+armor_stand_editable = true         # Allow pose editing
+command_signs_editable = true       # Allow command signs
+```
+
+## Elevators
+
+Elevators teleport between floors using specific blocks:
+
+```bash
+# Create elevator
+/elevator create main
+# Output: Elevator main created at your location
+
+# Add floors
+/elevator setfloor main floor1 100 64 200
+/elevator setfloor main floor2 100 70 200
+/elevator setfloor main floor3 100 76 200
+
+# Set elevator block material
+/elevator setmaterial main emerald_block
+
+# Usage:
+# Right-click elevator block -> Teleport up
+# Shift+Right-click -> Teleport down
+```
+
+Elevator structure:
+```
+Floor 3: [Emerald Block] <- Player stands here
+Floor 2: [Emerald Block]
+Floor 1: [Emerald Block] <- Bottom floor
+```
+
+## Armor Stand Pose Editor
+
+Create custom armor stand poses:
+
+```bash
+# Create pose
+/armorstand pose statue head 0 0 0
+/armorstand pose statue body 0 0 0
+/armorstand pose statue leftarm -45 0 0
+/armorstand pose statue rightarm 45 0 0
+/armorstand pose statue leftleg 0 0 0
+/armorstand pose statue rightleg 0 0 0
+
+# Parts: head, body, leftarm, rightarm, leftleg, rightleg
+# Values: Rotation in degrees (x, y, z)
+
+# List poses
+/armorstand list
+# Output:
+# - statue
+
+# Remove pose
+/armorstand remove statue
+```
+
+## Command Signs
+
+Right-click signs to execute commands:
+
+```bash
+# Create command sign
+/commandsign create heal "heal %player%"
+# Output: Command sign heal created. Right-click a sign to bind it.
+
+# Place a sign, right-click it to bind
+# Sign now executes: /heal <player who clicked>
+
+# Placeholders in commands:
+# %player% - Player who clicked
+# %x% %y% %z% - Sign coordinates
+
+# List signs
+/commandsign list
+# Output:
+# - heal -> heal %player%
+
+# Remove sign
+/commandsign remove heal
+```
+
+## Elevator Details
+
+- Uses specific block type (configurable)
+- Detects right-click on block
+- Up: Right-click, Down: Shift+Right-click
+- Searches for nearest floor above/below
+- Cross-world not supported (same world only)
+
+## Storage
+
+- Elevators: `interactiveblocks_elevators` table
+- Armor stands: `interactiveblocks_armorstands` table
+- Command signs: `interactiveblocks_commandsigns` table
+
+## Permissions Setup
+
+```bash
+# Builders
+/lp group builder permission set pumpkin-unified-core.interactive.elevator.create true
+/lp group builder permission set pumpkin-unified-core.interactive.elevator.setfloor true
+/lp group builder permission set pumpkin-unified-core.interactive.armorstand.pose true
+/lp group builder permission set pumpkin-unified-core.interactive.commandsign.create true
+
+# Staff
+/lp group mod permission set pumpkin-unified-core.interactive.elevator.remove true
+/lp group mod permission set pumpkin-unified-core.interactive.armorstand.remove true
+/lp group mod permission set pumpkin-unified-core.interactive.commandsign.remove true
+```
+
+## Notes
+
+- Elevators require exact block match
+- Armor stand poses saved as Euler angles
+- Command signs execute as console
+- Placeholders: `%player%`, `%x%`, `%y%`, `%z%`, `%world%`
+
+## Next
+
+- [Scheduler Module](/modules/scheduler)
+- [Configuration](/getting-started/configuration)

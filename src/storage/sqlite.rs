@@ -12,7 +12,7 @@ pub struct SqliteStorage {
 impl SqliteStorage {
     pub async fn new(config: &crate::config::SqliteConfig) -> Result<Self> {
         let database_url = format!("sqlite://{}?mode=rwc", config.path);
-        
+
         let pool = sqlx::any::AnyPoolOptions::new()
             .max_connections(config.max_connections)
             .connect(&database_url)
@@ -36,9 +36,15 @@ impl SqliteStorage {
 #[async_trait::async_trait]
 impl Storage for SqliteStorage {
     async fn init(&self) -> Result<()> {
-        sqlx::query("PRAGMA journal_mode = WAL").execute(self.pool.as_ref()).await?;
-        sqlx::query("PRAGMA synchronous = NORMAL").execute(self.pool.as_ref()).await?;
-        sqlx::query("PRAGMA busy_timeout = 5000").execute(self.pool.as_ref()).await?;
+        sqlx::query("PRAGMA journal_mode = WAL")
+            .execute(self.pool.as_ref())
+            .await?;
+        sqlx::query("PRAGMA synchronous = NORMAL")
+            .execute(self.pool.as_ref())
+            .await?;
+        sqlx::query("PRAGMA busy_timeout = 5000")
+            .execute(self.pool.as_ref())
+            .await?;
         Ok(())
     }
 
@@ -53,7 +59,7 @@ impl Storage for SqliteStorage {
             .bind(key)
             .fetch_optional(self.pool.as_ref())
             .await?;
-        
+
         Ok(row.map(|r| r.get::<Vec<u8>, _>("value")))
     }
 
@@ -66,11 +72,11 @@ impl Storage for SqliteStorage {
             table
         );
         sqlx::query(&sql)
-        .bind(key)
-        .bind(value)
-        .bind(timestamp)
-        .execute(self.pool.as_ref())
-        .await?;
+            .bind(key)
+            .bind(value)
+            .bind(timestamp)
+            .execute(self.pool.as_ref())
+            .await?;
         Ok(())
     }
 
@@ -105,17 +111,24 @@ impl Storage for SqliteStorage {
             .bind(pattern)
             .fetch_all(self.pool.as_ref())
             .await?;
-        
-        Ok(rows.into_iter().map(|r| r.get::<String, _>("key")).collect())
+
+        Ok(rows
+            .into_iter()
+            .map(|r| r.get::<String, _>("key"))
+            .collect())
     }
 
-    async fn query(&self, sql: &str, params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<Vec<HashMap<String, serde_json::Value>>> {
+    async fn query(
+        &self,
+        sql: &str,
+        params: &[&dyn sqlx::Encode<'_, sqlx::Any>],
+    ) -> Result<Vec<HashMap<String, serde_json::Value>>> {
         let mut query = sqlx::query(sql);
         for param in params {
             query = query.bind(param);
         }
         let rows = query.fetch_all(self.pool.as_ref()).await?;
-        
+
         let mut results = Vec::new();
         for row in rows {
             let mut map = HashMap::new();

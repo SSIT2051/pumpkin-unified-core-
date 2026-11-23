@@ -13,7 +13,7 @@ use uuid::Uuid;
 pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
     let module_clone = module.clone();
     let kick_cmd = Command::new("kick")
-        .permission("essentials.kick")
+        .permission("pumpkin-unified-core.kick")
         .description("Kick a player")
         .argument("player")
         .argument("reason")
@@ -33,7 +33,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let ban_cmd = Command::new("ban")
-        .permission("essentials.ban")
+        .permission("pumpkin-unified-core.ban")
         .description("Ban a player")
         .argument("player")
         .argument("reason")
@@ -56,7 +56,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let tempban_cmd = Command::new("tempban")
-        .permission("essentials.tempban")
+        .permission("pumpkin-unified-core.tempban")
         .description("Temporarily ban a player")
         .argument("player")
         .argument("duration")
@@ -82,7 +82,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let unban_cmd = Command::new("unban")
-        .permission("essentials.unban")
+        .permission("pumpkin-unified-core.unban")
         .description("Unban a player")
         .argument("player")
         .handler(async_handler!(move |sender, _server, args| {
@@ -100,7 +100,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let mute_cmd = Command::new("mute")
-        .permission("essentials.mute")
+        .permission("pumpkin-unified-core.mute")
         .description("Mute a player")
         .argument("player")
         .argument("reason")
@@ -123,7 +123,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let unmute_cmd = Command::new("unmute")
-        .permission("essentials.unmute")
+        .permission("pumpkin-unified-core.unmute")
         .description("Unmute a player")
         .argument("player")
         .handler(async_handler!(move |sender, _server, args| {
@@ -141,7 +141,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let jail_cmd = Command::new("jail")
-        .permission("essentials.jail")
+        .permission("pumpkin-unified-core.jail")
         .description("Jail a player")
         .argument("player")
         .argument("reason")
@@ -168,7 +168,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let unjail_cmd = Command::new("unjail")
-        .permission("essentials.unjail")
+        .permission("pumpkin-unified-core.unjail")
         .description("Unjail a player")
         .argument("player")
         .handler(async_handler!(move |sender, _server, args| {
@@ -186,7 +186,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let fly_cmd = Command::new("fly")
-        .permission("essentials.fly")
+        .permission("pumpkin-unified-core.fly")
         .description("Toggle flight")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -212,7 +212,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let god_cmd = Command::new("god")
-        .permission("essentials.god")
+        .permission("pumpkin-unified-core.god")
         .description("Toggle god mode")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -237,7 +237,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let heal_cmd = Command::new("heal")
-        .permission("essentials.heal")
+        .permission("pumpkin-unified-core.heal")
         .description("Heal a player")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -263,7 +263,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let feed_cmd = Command::new("feed")
-        .permission("essentials.feed")
+        .permission("pumpkin-unified-core.feed")
         .description("Feed a player")
         .argument("player")
         .handler(async_handler!(move |sender, server, args| {
@@ -287,7 +287,7 @@ pub fn register(module: Arc<ModerationModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let vanish_cmd = Command::new("vanish")
-        .permission("essentials.vanish")
+        .permission("pumpkin-unified-core.vanish")
         .description("Toggle vanish")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;

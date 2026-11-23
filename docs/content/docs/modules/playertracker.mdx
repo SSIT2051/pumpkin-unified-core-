@@ -1,0 +1,164 @@
+---
+title: "Player Tracker Module (AuditLog)"
+description: "Playtime tracking, IP history, sessions, and audit logging"
+---
+
+# Player Tracker Module
+
+**Replaces:** Plan (light version)  
+**Config Section:** `playertracker`  
+**Permission Prefix:** `pumpkin-unified-core.tracker`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/playtime [player]` | `pumpkin-unified-core.tracker.playtime` | Check playtime |
+| `/playtimetop [page]` | `pumpkin-unified-core.tracker.playtime.top` | Top playtimes |
+| `/seen <player>` | `pumpkin-unified-core.tracker.seen` | Last seen |
+| `/firstjoin <player>` | `pumpkin-unified-core.tracker.firstjoin` | First join date |
+| `/iphistory <player>` | `pumpkin-unified-core.tracker.iphistory` | IP history |
+| `/session <player>` | `pumpkin-unified-core.tracker.session` | Session history |
+| `/auditlog player <player>` | `pumpkin-unified-core.tracker.auditlog` | Full audit log |
+| `/auditlog block <player> <block>` | `pumpkin-unified-core.tracker.auditlog.block` | Block break logs |
+| `/auditlog item <player> <item>` | `pumpkin-unified-core.tracker.auditlog.item` | Item pickup/drop logs |
+
+## Configuration
+
+```toml
+[playertracker]
+track_playtime = true           # Track total playtime
+track_ips = true                # Track IP history
+track_first_join = true         # Track first join date
+audit_log_enabled = true        # Enable audit logging
+audit_log_blocks = true         # Log block breaks/places
+audit_log_items = true          # Log item pickups/drops
+audit_log_commands = true       # Log commands used
+max_audit_entries = 1000        # Max entries per player
+```
+
+## Examples
+
+```bash
+# Check your playtime
+/playtime
+# Output: Your playtime: 2d 5h 30m 15s
+
+# Check another player
+/playtime Steve
+# Output: Steve's playtime: 10d 2h 15m 30s
+
+# Top playtimes
+/playtimetop
+/playtimetop 2
+# Output:
+# 1. Notch - 50d 12h 30m
+# 2. Steve - 30d 5h 45m
+# 3. Alex - 25d 8h 20m
+
+# Last seen
+/seen Steve
+# Output: Steve was last seen 2h ago.
+# If online: Steve is online.
+
+# First join
+/firstjoin Steve
+# Output: Steve first joined on 2024-01-01 12:00:00 (30d ago)
+
+# IP history
+/iphistory Steve
+# Output:
+# 192.168.1.1 - Joins: 50 - First: 2024-01-01 - Last: 2024-01-15
+# 10.0.0.5 - Joins: 5 - First: 2024-01-10 - Last: 2024-01-12
+
+# Sessions
+/session Steve
+# Output:
+# Login: 2024-01-15 10:00:00 | Logout: 2024-01-15 12:30:00 | Duration: 2h 30m | IP: 192.168.1.1
+# Login: 2024-01-15 14:00:00 | Logout: Online | Duration: Current | IP: 192.168.1.1
+
+# Full audit log
+/auditlog player Steve
+# Output:
+# [2024-01-15 10:05:00] block_break - diamond_ore @ world (100, 64, 200)
+# [2024-01-15 10:06:00] item_pickup - diamond x3 @ world (100, 64, 200)
+# [2024-01-15 10:10:00] command - /home base
+
+# Block-specific logs
+/auditlog block Steve diamond_ore
+# Output:
+# [2024-01-15 10:05:00] block_break - diamond_ore @ world (100, 64, 200)
+# [2024-01-15 10:07:00] block_break - diamond_ore @ world (105, 64, 200)
+
+# Item-specific logs
+/auditlog item Steve diamond
+# Output:
+# [2024-01-15 10:06:00] item_pickup - diamond x3 @ world (100, 64, 200)
+# [2024-01-15 10:15:00] item_drop - diamond x1 @ world (100, 64, 200)
+```
+
+## Tracked Events
+
+When audit logging enabled:
+
+| Event | Description |
+|-------|-------------|
+| `block_break` | Player breaks block |
+| `block_place` | Player places block |
+| `item_pickup` | Player picks up item |
+| `item_drop` | Player drops item |
+| `chest_open` | Player opens container |
+| `command` | Player uses command |
+| `join` | Player joins server |
+| `quit` | Player leaves server |
+
+## Storage Tables
+
+- `playertracker` - Main data (playtime, first join, last seen)
+- `playertracker_ips` - IP history per player
+- `playertracker_sessions` - Login/logout sessions
+- `playertracker_audit` - Audit log entries
+
+## Data Retention
+
+- `max_audit_entries`: Keeps latest N entries per player
+- Old entries auto-pruned on new entries
+- Sessions and IPs kept indefinitely
+- Playtime never expires
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.tracker.playtime true
+/lp group default permission set pumpkin-unified-core.tracker.seen true
+
+# Staff
+/lp group mod permission set pumpkin-unified-core.tracker.playtime.top true
+/lp group mod permission set pumpkin-unified-core.tracker.firstjoin true
+/lp group mod permission set pumpkin-unified-core.tracker.iphistory true
+/lp group mod permission set pumpkin-unified-core.tracker.session true
+/lp group mod permission set pumpkin-unified-core.tracker.auditlog true
+/lp group mod permission set pumpkin-unified-core.tracker.auditlog.block true
+/lp group mod permission set pumpkin-unified-core.tracker.auditlog.item true
+/lp group mod permission set pumpkin-unified-core.tracker.auditlog.command true
+```
+
+## Privacy Notes
+
+- IP tracking: Enable only if legally compliant
+- Inform players in rules/ToS
+- Consider GDPR/privacy laws
+- Disable with `track_ips = false` if needed
+
+## Performance
+
+- Audit logs cached in memory
+- Batch writes to storage
+- Max 1000 entries per player by default
+- Queries use indexed UUID lookups
+
+## Next
+
+- [Chat & Tab Module](/modules/chattab)
+- [Configuration](/getting-started/configuration)

@@ -1,0 +1,120 @@
+---
+title: "Chat Module"
+description: "Private messages, mail system, and broadcasts"
+---
+
+# Chat Module
+
+**Replaces:** EssentialsX Chat  
+**Config Section:** `chat`  
+**Permission Prefix:** `pumpkin-unified-core`
+
+## Commands
+
+| Command | Aliases | Permission | Description |
+|---------|---------|------------|-------------|
+| `/msg <player> <message>` | `/tell`, `/w` | `pumpkin-unified-core.msg` | Private message |
+| `/r <message>` | `/reply` | `pumpkin-unified-core.reply` | Reply to last PM |
+| `/mail send <player> <message>` | - | `pumpkin-unified-core.mail.send` | Send offline mail |
+| `/mail read` | - | `pumpkin-unified-core.mail` | Read mail |
+| `/broadcast <message>` | `/bc` | `pumpkin-unified-core.broadcast` | Global broadcast |
+| `/broadcastworld <message>` | `/bcw` | `pumpkin-unified-core.broadcastworld` | World broadcast |
+
+## Configuration
+
+```toml
+[chat]
+format = "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}"
+broadcast_format = "&4[Broadcast] &r{message}"
+private_message_format = "&8[&bPM&8] &r{from}&r -> &r{to}&r: &f{message}"
+chat_radius = 100.0             # Local chat radius (0 = global)
+anti_spam = true                # Enable anti-spam
+spam_threshold = 5              # Messages before spam detection
+```
+
+## Chat Format Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{group}` | Player's primary group |
+| `{prefix}` | Group prefix (from LuckPerms) |
+| `{player}` | Player name |
+| `{message}` | Chat message |
+| `{displayname}` | Display name (nickname) |
+
+## Examples
+
+```bash
+# Private message
+/msg Steve Hello!
+# Steve sees: [PM] Notch -> Steve: Hello!
+# You see: [PM] Notch -> Steve: Hello!
+
+# Reply to last message
+/r Thanks!
+# Output: [PM] Steve -> Notch: Thanks!
+
+# Send offline mail
+/mail send Steve "Check this out when you're online"
+# Output: Mail sent to Steve
+
+# Read mail
+/mail read
+# Output: No mail / Mail list...
+
+# Global broadcast
+/broadcast Server restarting in 5 minutes!
+# All players see: [Broadcast] Server restarting in 5 minutes!
+
+# World broadcast
+/broadcastworld PvP event starting at spawn!
+# Players in same world see: [Broadcast] PvP event starting at spawn!
+```
+
+## Anti-Spam
+
+When `anti_spam = true`:
+- Tracks messages per player
+- Threshold: `spam_threshold` messages in short time
+- Actions: mute, warn, or cancel message
+- Configurable per server needs
+
+## Local Chat
+
+When `chat_radius > 0`:
+- Messages only sent to players within radius
+- Radius in blocks
+- Bypass with `pumpkin-unified-core.chat.bypass.radius` (Op)
+
+## Mail System
+
+- Offline messages stored in `mail` table
+- Delivered on player join
+- `/mail read` shows unread count
+- Supports multi-line messages
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.msg true
+/lp group default permission set pumpkin-unified-core.reply true
+/lp group default permission set pumpkin-unified-core.mail true
+/lp group default permission set pumpkin-unified-core.mail.send true
+
+# Staff
+/lp group mod permission set pumpkin-unified-core.broadcast true
+/lp group mod permission set pumpkin-unified-core.broadcastworld true
+```
+
+## Notes
+
+- PMs support color codes (&a, &c, etc.)
+- Mail persists across restarts
+- Broadcast formats use config placeholders
+- Chat radius 0 = global chat
+
+## Next
+
+- [Events Module](/modules/events)
+- [Holograms Module](/modules/holograms)

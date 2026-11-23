@@ -1,0 +1,195 @@
+---
+title: "Chat & Tab Module"
+description: "Chat channels, tab list formatting, hex colors, and hover tooltips"
+---
+
+# Chat & Tab Module
+
+**Replaces:** EssentialsX Chat + TAB  
+**Config Section:** `chattab`  
+**Permission Prefix:** `pumpkin-unified-core.chattab`
+
+## Commands
+
+### Channel Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/channel create <name> <display_name>` | `pumpkin-unified-core.chattab.channel.create` | Create channel |
+| `/channel delete <name>` | `pumpkin-unified-core.chattab.channel.delete` | Delete channel |
+| `/channel join <name>` | `pumpkin-unified-core.chattab.channel.join` | Join channel |
+| `/channel leave` | `pumpkin-unified-core.chattab.channel.leave` | Leave channel |
+| `/channel list` | `pumpkin-unified-core.chattab.channel.list` | List channels |
+| `/channel setcolor <name> <color>` | `pumpkin-unified-core.chattab.channel.setcolor` | Set channel color |
+| `/channel setformat <name> <format>` | `pumpkin-unified-core.chattab.channel.setformat` | Set channel format |
+
+### ChatTab Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/chattab reload` | `pumpkin-unified-core.chattab.reload` | Reload config |
+| `/chattab tabheader <text>` | `pumpkin-unified-core.chattab.tabheader` | Set tab header |
+| `/chattab tabfooter <text>` | `pumpkin-unified-core.chattab.tabfooter` | Set tab footer |
+
+## Configuration
+
+```toml
+[chattab]
+format = "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}"
+tab_header = "&6&lWelcome to &e{server}&6!&r\n&7Online: &e{online}/{max}"
+tab_footer = "&7Website: &ehttps://example.com&r\n&7Discord: &ediscord.gg/example"
+chat_channels = true              # Enable channels
+hex_colors = true                 # Enable #RRGGBB colors
+hover_tooltips = true             # Enable hover tooltips
+```
+
+## Default Channels
+
+| Name | Display | Color | Format | Permission |
+|------|---------|-------|--------|------------|
+| `global` | Global | `&f` | `{channel} {player}: {message}` | None |
+| `local` | Local | `&a` | `[Local] {player}: {message}` | None |
+| `staff` | Staff | `&c` | `[Staff] {player}: {message}` | `pumpkin-unified-core.chattab.channel.staff` |
+
+## Channel Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{channel}` | Channel display name with color |
+| `{player}` | Player name |
+| `{message}` | Chat message |
+| `{group}` | Player's primary group |
+| `{prefix}` | Group prefix |
+
+## Examples
+
+```bash
+# Create custom channel
+/channel create faction "Faction Chat"
+# Output: Channel created: faction
+
+# Join channel
+/channel join faction
+# Output: Joined channel: faction
+
+# Set channel color
+/channel setcolor faction "&5"
+# Output: Channel color updated: faction
+
+# Set channel format
+/channel setformat faction "&5[Faction] &f{player}: &7{message}"
+# Output: Channel format updated: faction
+
+# Leave channel (returns to global)
+/channel leave
+# Output: Left channel, rejoined global
+
+# List channels
+/channel list
+# Output:
+# Global (global) - Perm: none
+# Local (local) - Perm: none
+# Staff (staff) - Perm: pumpkin-unified-core.chattab.channel.staff
+# Faction (faction) - Perm: none
+
+# Delete custom channel
+/channel delete faction
+# Output: Channel deleted: faction
+```
+
+## Tab List Formatting
+
+### Header
+```bash
+/chattab tabheader "&6&lWelcome to &e{server}&6!&r\n&7Online: &e{online}/{max}"
+```
+
+### Footer
+```bash
+/chattab tabfooter "&7Website: &ehttps://example.com&r\n&7Discord: &ediscord.gg/example"
+```
+
+### Tab Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{server}` | Server name |
+| `{online}` | Current online players |
+| `{max}` | Max players |
+| `{time}` | Current time |
+| `{date}` | Current date |
+
+## Hex Colors
+
+When `hex_colors = true`:
+- Use `#RRGGBB` in chat: `#FF0000Red text`
+- Works in messages, signs, books
+- Converts to JSON format automatically
+
+Example:
+```
+Player says: #FF0000Red #00FF00Green #0000FFBlue
+Displays as: Red Green Blue (in actual colors)
+```
+
+## Hover Tooltips
+
+When `hover_tooltips = true`:
+- Hover over items in chat -> Shows item tooltip
+- Hover over player names -> Shows player info
+- Hover over coordinates -> Shows world info
+
+## Reload Config
+
+```bash
+/chattab reload
+# Output: ChatTab reloaded
+```
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.chattab.channel true
+/lp group default permission set pumpkin-unified-core.chattab.channel.join true
+/lp group default permission set pumpkin-unified-core.chattab.channel.list true
+/lp group default permission set pumpkin-unified-core.chattab.hex true
+/lp group default permission set pumpkin-unified-core.chattab.hover true
+
+# Staff
+/lp group mod permission set pumpkin-unified-core.chattab.channel.create true
+/lp group mod permission set pumpkin-unified-core.chattab.channel.delete true
+/lp group mod permission set pumpkin-unified-core.chattab.channel.setcolor true
+/lp group mod permission set pumpkin-unified-core.chattab.channel.setformat true
+/lp group mod permission set pumpkin-unified-core.chattab.channel.staff true
+/lp group mod permission set pumpkin-unified-core.chattab.reload true
+/lp group mod permission set pumpkin-unified-core.chattab.tabheader true
+/lp group mod permission set pumpkin-unified-core.chattab.tabfooter true
+```
+
+## Channel Format Example
+
+```toml
+# In config or via command
+format = "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}"
+
+# For staff channel
+format = "&c[Staff] &f{player}: &r{message}"
+
+# For faction channel
+format = "&5[Faction] &f{player}: &7{message}"
+```
+
+## Notes
+
+- Players auto-join `global` on login
+- Channel membership persists across relogs
+- Staff channel requires permission
+- Hex colors work everywhere (chat, signs, books)
+- Tab header/footer update in real-time
+- Hover tooltips use vanilla JSON format
+
+## Next
+
+- [API Reference](/api/storage)
+- [Advanced Topics](/advanced/placeholders)

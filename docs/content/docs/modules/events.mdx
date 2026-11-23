@@ -1,0 +1,110 @@
+---
+title: "Events Module"
+description: "Join/leave messages, death messages, keep inventory, anti-build"
+---
+
+# Events Module
+
+**Config Section:** `events`  
+**No Commands** - Pure event handlers
+
+## Configuration
+
+```toml
+[events]
+player_join_message = "&a{player} joined the game"
+player_leave_message = "&c{player} left the game"
+death_messages = true
+keep_inventory = false
+anti_build = true
+```
+
+## Features
+
+### Join/Leave Messages
+
+Customizable messages with placeholders:
+
+```toml
+player_join_message = "&a{player} joined the game"
+player_leave_message = "&c{player} left the game"
+```
+
+Placeholders: `{player}`, `{displayname}`
+
+Disable by setting to empty string:
+```toml
+player_join_message = ""
+```
+
+### Death Messages
+
+When `death_messages = true`:
+- Shows vanilla death messages
+- Includes cause, killer (if player)
+- Format follows vanilla style
+
+### Keep Inventory
+
+When `keep_inventory = true`:
+- Players keep inventory on death
+- Experience kept
+- Applies to all death causes
+
+### Anti-Build
+
+When `anti_build = true`:
+- Prevents block breaking/placing for players without permission
+- Permission: `pumpkin-unified-core.events.build`
+- Default: OP only
+
+```bash
+# Allow building for default
+/lp group default permission set pumpkin-unified-core.events.build true
+```
+
+## Permissions
+
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.events.build` | Op | Allow building when anti_build enabled |
+
+## Examples
+
+```toml
+# Minimal config - only death messages
+[events]
+player_join_message = ""
+player_leave_message = ""
+death_messages = true
+keep_inventory = false
+anti_build = false
+
+# Creative server - keep inventory, no anti-build
+[events]
+player_join_message = "&e{player} joined!"
+player_leave_message = "&e{player} left!"
+death_messages = true
+keep_inventory = true
+anti_build = false
+
+# Survival with anti-grief
+[events]
+player_join_message = "&a{player} joined the game"
+player_leave_message = "&c{player} left the game"
+death_messages = true
+keep_inventory = false
+anti_build = true
+```
+
+## Notes
+
+- Events module has no commands
+- Configured entirely via config.toml
+- Integrates with other modules (Homes for bed spawn, etc.)
+- Anti-build respects creative mode (allows breaking in creative)
+
+## Next
+
+- [Configuration](/getting-started/configuration)
+- [Modules Overview](/modules/overview)

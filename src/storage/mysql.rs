@@ -48,7 +48,7 @@ impl Storage for MysqlStorage {
             .bind(key)
             .fetch_optional(self.pool.as_ref())
             .await?;
-        
+
         Ok(row.map(|r| r.get::<Vec<u8>, _>("value")))
     }
 
@@ -61,11 +61,11 @@ impl Storage for MysqlStorage {
             table
         );
         sqlx::query(&sql)
-        .bind(key)
-        .bind(value)
-        .bind(timestamp)
-        .execute(self.pool.as_ref())
-        .await?;
+            .bind(key)
+            .bind(value)
+            .bind(timestamp)
+            .execute(self.pool.as_ref())
+            .await?;
         Ok(())
     }
 
@@ -100,17 +100,24 @@ impl Storage for MysqlStorage {
             .bind(pattern)
             .fetch_all(self.pool.as_ref())
             .await?;
-        
-        Ok(rows.into_iter().map(|r| r.get::<String, _>("key")).collect())
+
+        Ok(rows
+            .into_iter()
+            .map(|r| r.get::<String, _>("key"))
+            .collect())
     }
 
-    async fn query(&self, sql: &str, params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<Vec<HashMap<String, serde_json::Value>>> {
+    async fn query(
+        &self,
+        sql: &str,
+        params: &[&dyn sqlx::Encode<'_, sqlx::Any>],
+    ) -> Result<Vec<HashMap<String, serde_json::Value>>> {
         let mut query = sqlx::query(sql);
         for param in params {
             query = query.bind(param);
         }
         let rows = query.fetch_all(self.pool.as_ref()).await?;
-        
+
         let mut results = Vec::new();
         for row in rows {
             let mut map = HashMap::new();

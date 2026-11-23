@@ -1,0 +1,214 @@
+---
+title: "Permissions Module (LuckPerms)"
+description: "Full LuckPerms implementation with contexts, tracks, and inheritance"
+---
+
+# Permissions Module
+
+**Replaces:** LuckPerms  
+**Config Section:** `permissions`  
+**Permission Prefix:** `pumpkin-unified-core.lp`
+
+## Commands
+
+All commands under `/lp` or `/luckperms`:
+
+### User Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/lp user <user> info` | `pumpkin-unified-core.lp.user.info` | Show user permissions |
+| `/lp user <user> editor` | `pumpkin-unified-core.lp.user.editor` | Open permission editor |
+| `/lp user <user> promote` | `pumpkin-unified-core.lp.user.promote` | Promote user |
+| `/lp user <user> demote` | `pumpkin-unified-core.lp.user.demote` | Demote user |
+| `/lp user <user> showtracks` | `pumpkin-unified-core.lp.user.showtracks` | Show user tracks |
+| `/lp user <user> clear` | `pumpkin-unified-core.lp.user.clear` | Clear user data |
+| `/lp user <user> clone <target>` | `pumpkin-unified-core.lp.user.clone` | Clone user |
+| `/lp user <user> permission set <perm> <true/false>` | `pumpkin-unified-core.lp.user.permission` | Set permission |
+| `/lp user <user> permission unset <perm>` | `pumpkin-unified-core.lp.user.permission` | Unset permission |
+| `/lp user <user> parent add <group>` | `pumpkin-unified-core.lp.user.parent` | Add group |
+| `/lp user <user> parent remove <group>` | `pumpkin-unified-core.lp.user.parent` | Remove group |
+| `/lp user <user> meta set <key> <value>` | `pumpkin-unified-core.lp.user.meta` | Set metadata |
+| `/lp user <user> meta unset <key>` | `pumpkin-unified-core.lp.user.meta` | Unset metadata |
+
+### Group Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/lp group <group> info` | `pumpkin-unified-core.lp.group.info` | Show group info |
+| `/lp group <group> editor` | `pumpkin-unified-core.lp.group.editor` | Open group editor |
+| `/lp group <group> listmembers` | `pumpkin-unified-core.lp.group.listmembers` | List members |
+| `/lp group <group> setweight <weight>` | `pumpkin-unified-core.lp.group.setweight` | Set weight |
+| `/lp group <group> setdisplayname <name>` | `pumpkin-unified-core.lp.group.setdisplayname` | Set display name |
+| `/lp group <group> showtracks` | `pumpkin-unified-core.lp.group.showtracks` | Show tracks |
+| `/lp group <group> clear` | `pumpkin-unified-core.lp.group.clear` | Clear group |
+| `/lp group <group> rename <name>` | `pumpkin-unified-core.lp.group.rename` | Rename group |
+| `/lp group <group> clone <target>` | `pumpkin-unified-core.lp.group.clone` | Clone group |
+| `/lp group <group> permission set <perm> <true/false>` | `pumpkin-unified-core.lp.group.permission` | Set permission |
+| `/lp group <group> parent add <group>` | `pumpkin-unified-core.lp.group.parent` | Add parent |
+| `/lp group <group> meta set <key> <value>` | `pumpkin-unified-core.lp.group.meta` | Set metadata |
+
+### Track Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/lp track <track> createtrack <groups...>` | `pumpkin-unified-core.lp.track.createtrack` | Create track |
+| `/lp track <track> deletetrack` | `pumpkin-unified-core.lp.track.deletetrack` | Delete track |
+| `/lp track <track> listtracks` | `pumpkin-unified-core.lp.track.listtracks` | List tracks |
+| `/lp track <track> append <group>` | `pumpkin-unified-core.lp.track.createtrack` | Append group |
+| `/lp track <track> insert <index> <group>` | `pumpkin-unified-core.lp.track.createtrack` | Insert group |
+| `/lp track <track> remove <group>` | `pumpkin-unified-core.lp.track.createtrack` | Remove group |
+
+### System Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/lp log recent` | `pumpkin-unified-core.lp.log.recent` | Recent changes |
+| `/lp log search <query>` | `pumpkin-unified-core.lp.log.search` | Search logs |
+| `/lp log notify` | `pumpkin-unified-core.lp.log.notify` | Toggle notifications |
+| `/lp sync` | `pumpkin-unified-core.lp.sync` | Sync permissions |
+| `/lp info` | `pumpkin-unified-core.lp.info` | Plugin info |
+| `/lp editor` | `pumpkin-unified-core.lp.editor` | Web editor URL |
+| `/lp applyedits` | `pumpkin-unified-core.lp.applyedits` | Apply pending edits |
+| `/lp verbose` | `pumpkin-unified-core.lp.verbose` | Toggle verbose |
+| `/lp tree` | `pumpkin-unified-core.lp.tree` | Permission tree |
+| `/lp search <perm>` | `pumpkin-unified-core.lp.search` | Search permission |
+| `/lp import <source>` | `pumpkin-unified-core.lp.import` | Import permissions |
+| `/lp export <format>` | `pumpkin-unified-core.lp.export` | Export permissions |
+| `/lp reloadconfig` | `pumpkin-unified-core.lp.reloadconfig` | Reload config |
+| `/lp translations` | `pumpkin-unified-core.lp.translations` | Manage translations |
+
+## Configuration
+
+```toml
+[permissions]
+enable_contexts = true          # Enable context support
+default_group = "default"       # Default group for new players
+[permissions.inheritance]
+max_depth = 10                  # Max inheritance depth
+order = "depth-first"           # "depth-first" or "breadth-first"
+permissions.tracks = []         # Promotion tracks
+```
+
+## Contexts
+
+PUC supports LuckPerms contexts:
+
+```bash
+# World-specific permission
+/lp user Steve permission set pumpkin-unified-core.fly true world=world_nether
+
+# Server-specific (for proxy)
+/lp user Steve permission set pumpkin-unified-core.fly true server=survival
+
+# Temporary permission (time-based)
+/lp user Steve permission set pumpkin-unified-core.fly true 3600
+
+# Temporary with context
+/lp user Steve permission set pumpkin-unified-core.fly true 3600 world=world_nether
+```
+
+## Examples
+
+```bash
+# Create groups
+/lp creategroup default
+/lp creategroup builder
+/lp creategroup mod
+/lp creategroup admin
+
+# Set up inheritance
+/lp group builder parent add default
+/lp group mod parent add builder
+/lp group admin parent add mod
+
+# Set weights (higher = more priority)
+/lp group default setweight 100
+/lp group builder setweight 200
+/lp group mod setweight 300
+/lp group admin setweight 400
+
+# Set permissions
+/lp group default permission set pumpkin-unified-core.sethome true
+/lp group builder permission set pumpkin-unified-core.gamemode.creative true
+/lp group mod permission set pumpkin-unified-core.kick true
+/lp group admin permission set pumpkin-unified-core.* true
+
+# Create promotion track
+/lp createtrack staff builder mod admin
+/lp track staff append admin
+
+# Promote user
+/lp user Steve promote staff
+
+# Add user to group
+/lp user Steve parent add builder
+
+# Set user permission
+/lp user Steve permission set pumpkin-unified-core.fly true
+
+# View user info
+/lp user Steve info
+
+# Search for permission
+/lp search fly
+```
+
+## Tracks Example
+
+```bash
+# Create donor track
+/lp createtrack donor vip mvp
+/lp track donor append mvp
+
+# Promote through track
+/lp user Steve promote donor
+# Steve: default -> vip -> mvp
+```
+
+## Storage
+
+Permissions stored in:
+- `users` table - User data
+- `groups` table - Group data
+- `tracks` table - Track definitions
+- `logs` table - Change history
+
+## Migration from LuckPerms
+
+```bash
+# Export from LuckPerms
+/lp export file
+
+# Import to PUC
+/lp import file
+```
+
+Or use SQL migration for large datasets.
+
+## Permissions Setup
+
+```bash
+# Permission managers
+/lp group perms permission set pumpkin-unified-core.lp.user.info true
+/lp group perms permission set pumpkin-unified-core.lp.user.editor true
+/lp group perms permission set pumpkin-unified-core.lp.group.info true
+/lp group perms permission set pumpkin-unified-core.lp.sync true
+
+# Full admin access
+/lp group admin permission set pumpkin-unified-core.lp.* true
+```
+
+## Notes
+
+- Full LuckPerms API compatibility
+- Contexts: world, server, global
+- Inheritance: depth-first or breadth-first
+- Tracks for promotion paths
+- Web editor at `/lp editor`
+- Verbose mode for debugging
+
+## Next
+
+- [Spawn Module](/modules/spawn)
+- [Configuration](/getting-started/configuration)

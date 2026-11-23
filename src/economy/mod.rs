@@ -1,4 +1,4 @@
-use crate::storage::{Storage, StorageBackend, SerializedData};
+use crate::storage::{SerializedData, Storage, StorageBackend};
 use crate::utils::macros::*;
 use crate::utils::text::format_text;
 use anyhow::Result;
@@ -52,7 +52,10 @@ impl EconomyModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::EconomyConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::EconomyConfig>,
+    ) -> Self {
         Self {
             storage,
             cache: Arc::new(DashMap::new()),
@@ -64,7 +67,7 @@ impl EconomyModule {
         if let Some(cached) = self.cache.get(&uuid) {
             return Ok(cached.balance);
         }
-        
+
         let key = uuid.to_string();
         if let Some(data) = self.storage.get("economy_balance", &key).await? {
             let balance_data: SerializedData<EconomyBalance> = SerializedData::deserialize(&data)?;
@@ -72,7 +75,7 @@ impl EconomyModule {
             self.cache.insert(uuid, balance_data.data);
             return Ok(balance);
         }
-        
+
         let new_balance = EconomyBalance {
             uuid,
             balance: self.config.starting_balance,
@@ -89,9 +92,11 @@ impl EconomyModule {
             balance: clamped,
             last_updated: chrono::Utc::now().timestamp(),
         };
-        
+
         let data = SerializedData::new(balance.clone()).serialize()?;
-        self.storage.set("economy_balance", &uuid.to_string(), &data).await?;
+        self.storage
+            .set("economy_balance", &uuid.to_string(), &data)
+            .await?;
         self.cache.insert(uuid, balance);
         Ok(())
     }
@@ -111,20 +116,34 @@ impl EconomyModule {
         if from == to {
             return Err(anyhow::anyhow!("Cannot pay yourself"));
         }
-        
+
         let from_balance = self.get_balance(from).await?;
         if from_balance < amount {
             return Err(anyhow::anyhow!("Insufficient funds"));
         }
-        
+
         self.take_balance(from, amount).await?;
         self.add_balance(to, amount).await?;
-        
+
         if self.config.log_transactions {
-            self.log_transaction(None, to, amount, TransactionType::Pay, Some(format!("Payment from {}", from))).await?;
-            self.log_transaction(Some(from), to, amount, TransactionType::Pay, Some(format!("Payment to {}", to))).await?;
+            self.log_transaction(
+                None,
+                to,
+                amount,
+                TransactionType::Pay,
+                Some(format!("Payment from {}", from)),
+            )
+            .await?;
+            self.log_transaction(
+                Some(from),
+                to,
+                amount,
+                TransactionType::Pay,
+                Some(format!("Payment to {}", to)),
+            )
+            .await?;
         }
-        
+
         Ok(())
     }
 
@@ -145,32 +164,36 @@ impl EconomyModule {
             timestamp: chrono::Utc::now().timestamp(),
             note,
         };
-        
+
         let data = SerializedData::new(transaction).serialize()?;
-        self.storage.set("economy_transactions", &transaction.id.to_string(), &data).await?;
+        self.storage
+            .set("economy_transactions", &transaction.id.to_string(), &data)
+            .await?;
         Ok(())
     }
 
     pub async fn get_top_balances(&self, limit: usize) -> Result<Vec<(Uuid, f64)>> {
         let keys = self.storage.keys("economy_balance", "%").await?;
         let mut balances = Vec::new();
-        
+
         for key in keys {
             if let Ok(uuid) = Uuid::parse_str(&key) {
                 if let Some(data) = self.storage.get("economy_balance", &key).await? {
-                    let balance_data: SerializedData<EconomyBalance> = SerializedData::deserialize(&data)?;
+                    let balance_data: SerializedData<EconomyBalance> =
+                        SerializedData::deserialize(&data)?;
                     balances.push((uuid, balance_data.data.balance));
                 }
             }
         }
-        
+
         balances.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
         balances.truncate(limit);
         Ok(balances)
     }
 
     pub fn format_money(&self, amount: f64) -> String {
-        self.config.currency_format
+        self.config
+            .currency_format
             .replace("{symbol}", &self.config.currency_symbol)
             .replace("{amount}", &format!("{:.2}", amount))
     }

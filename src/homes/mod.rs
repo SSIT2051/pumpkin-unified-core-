@@ -34,7 +34,10 @@ impl HomesModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::HomesConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::HomesConfig>,
+    ) -> Self {
         Self {
             storage,
             cache: Arc::new(DashMap::new()),
@@ -51,9 +54,10 @@ impl HomesModule {
         if let Some(cached) = self.cache.get(&key) {
             return Ok(Some(cached.clone()));
         }
-        
+
         if let Some(data) = self.storage.get("homes", &key).await? {
-            let home_data: crate::storage::SerializedData<Home> = crate::storage::SerializedData::deserialize(&data)?;
+            let home_data: crate::storage::SerializedData<Home> =
+                crate::storage::SerializedData::deserialize(&data)?;
             self.cache.insert(key.clone(), home_data.data.clone());
             return Ok(Some(home_data.data));
         }
@@ -81,7 +85,8 @@ impl HomesModule {
         let mut homes = Vec::new();
         for key in keys {
             if let Some(data) = self.storage.get("homes", &key).await? {
-                let home_data: crate::storage::SerializedData<Home> = crate::storage::SerializedData::deserialize(&data)?;
+                let home_data: crate::storage::SerializedData<Home> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 homes.push(home_data.data);
             }
         }

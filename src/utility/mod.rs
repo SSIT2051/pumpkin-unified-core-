@@ -28,6 +28,8 @@ impl UtilityModule {
 
 impl Clone for UtilityModule {
     fn clone(&self) -> Self {
-        Self { config: self.config.clone() }
+        Self {
+            config: self.config.clone(),
+        }
     }
 }

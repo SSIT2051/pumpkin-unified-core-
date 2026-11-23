@@ -1,44 +1,58 @@
 use pumpkin_plugin_api::{
-    plugin::{Plugin, PluginMetadata},
-    command::{Command, CommandNode, CommandHandler},
-    event::EventHandler,
+    command::{Command, CommandHandler, CommandNode},
     context::Context,
+    event::EventHandler,
     permission::{Permission, PermissionDefault},
+    plugin::{Plugin, PluginMetadata},
     server::Server,
 };
 use std::sync::Arc;
 
+mod chat;
+mod chattab;
 mod config;
-mod storage;
 mod economy;
-mod warps;
+mod events;
+mod gamemode;
 mod homes;
-mod tpa;
+mod holograms;
+mod interactiveblocks;
 mod kits;
 mod moderation;
-mod gamemode;
 mod permissions;
+mod playertracker;
+mod portals;
+mod scheduler;
 mod spawn;
+mod stafftools;
+mod storage;
+mod tpa;
 mod utility;
-mod chat;
-mod events;
 mod utils;
+mod warps;
 
 use crate::{
+    chat::ChatModule,
+    chattab::ChatTabModule,
     config::Config,
-    storage::StorageManager,
     economy::EconomyModule,
-    warps::WarpsModule,
+    events::EventModule,
+    gamemode::GamemodeModule,
     homes::HomesModule,
-    tpa::TpaModule,
+    holograms::HologramsModule,
+    interactiveblocks::InteractiveBlocksModule,
     kits::KitsModule,
     moderation::ModerationModule,
-    gamemode::GamemodeModule,
     permissions::PermissionsModule,
+    playertracker::PlayerTrackerModule,
+    portals::PortalsModule,
+    scheduler::SchedulerModule,
     spawn::SpawnModule,
+    stafftools::StaffToolsModule,
+    storage::StorageManager,
+    tpa::TpaModule,
     utility::UtilityModule,
-    chat::ChatModule,
-    events::EventModule,
+    warps::WarpsModule,
 };
 
 pub struct UnifiedPlugin {
@@ -55,6 +69,13 @@ pub struct UnifiedPlugin {
     spawn: Arc<SpawnModule>,
     utility: Arc<UtilityModule>,
     chat: Arc<ChatModule>,
+    chattab: Arc<ChatTabModule>,
+    holograms: Arc<HologramsModule>,
+    portals: Arc<PortalsModule>,
+    stafftools: Arc<StaffToolsModule>,
+    interactiveblocks: Arc<InteractiveBlocksModule>,
+    playertracker: Arc<PlayerTrackerModule>,
+    scheduler: Arc<SchedulerModule>,
     events: Arc<EventModule>,
 }
 
@@ -62,18 +83,52 @@ impl Plugin for UnifiedPlugin {
     fn new() -> Self {
         let config = Arc::new(Config::load());
         let storage = Arc::new(StorageManager::new(&config));
-        
-        let economy = Arc::new(EconomyModule::with_config(storage.clone(), config.economy.clone()));
-        let warps = Arc::new(WarpsModule::with_config(storage.clone(), config.warps.clone()));
-        let homes = Arc::new(HomesModule::with_config(storage.clone(), config.homes.clone()));
+
+        let economy = Arc::new(EconomyModule::with_config(
+            storage.clone(),
+            config.economy.clone(),
+        ));
+        let warps = Arc::new(WarpsModule::with_config(
+            storage.clone(),
+            config.warps.clone(),
+        ));
+        let homes = Arc::new(HomesModule::with_config(
+            storage.clone(),
+            config.homes.clone(),
+        ));
         let tpa = Arc::new(TpaModule::with_config(config.tpa.clone()));
-        let kits = Arc::new(KitsModule::with_config(storage.clone(), config.kits.clone()));
-        let moderation = Arc::new(ModerationModule::with_config(storage.clone(), config.moderation.clone()));
+        let kits = Arc::new(KitsModule::with_config(
+            storage.clone(),
+            config.kits.clone(),
+        ));
+        let moderation = Arc::new(ModerationModule::with_config(
+            storage.clone(),
+            config.moderation.clone(),
+        ));
         let gamemode = Arc::new(GamemodeModule::new());
-        let permissions = Arc::new(PermissionsModule::with_config(storage.clone(), config.permissions.clone()));
-        let spawn = Arc::new(SpawnModule::with_config(storage.clone(), config.spawn.clone()));
+        let permissions = Arc::new(PermissionsModule::with_config(
+            storage.clone(),
+            config.permissions.clone(),
+        ));
+        let spawn = Arc::new(SpawnModule::with_config(
+            storage.clone(),
+            config.spawn.clone(),
+        ));
         let utility = Arc::new(UtilityModule::with_config(config.utility.clone()));
         let chat = Arc::new(ChatModule::new().with_permissions(permissions.clone()));
+        let chattab = Arc::new(ChatTabModule::new(config.chattab.clone()));
+        let holograms = Arc::new(HologramsModule::with_config(
+            storage.clone(),
+            config.holograms.clone(),
+        ));
+        let portals = Arc::new(PortalsModule::new(storage.clone()));
+        let stafftools = Arc::new(StaffToolsModule::new(storage.clone(), moderation.clone()));
+        let interactiveblocks = Arc::new(InteractiveBlocksModule::new(storage.clone()));
+        let playertracker = Arc::new(PlayerTrackerModule::new(storage.clone()));
+        let scheduler = Arc::new(SchedulerModule::with_config(
+            storage.clone(),
+            config.scheduler.clone(),
+        ));
         let events = Arc::new(EventModule::new(
             economy.clone(),
             warps.clone(),
@@ -102,6 +157,13 @@ impl Plugin for UnifiedPlugin {
             spawn,
             utility,
             chat,
+            chattab,
+            holograms,
+            portals,
+            stafftools,
+            interactiveblocks,
+            playertracker,
+            scheduler,
             events,
         }
     }
@@ -125,6 +187,20 @@ impl Plugin for UnifiedPlugin {
             })
         });
 
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.stafftools
+                    .load_data()
+                    .expect("Failed to load stafftools warnings");
+            })
+        });
+
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.scheduler.initialize().await.expect("Failed to initialize scheduler");
+            })
+        });
+
         self.economy.register_commands(context);
         self.warps.register_commands(context);
         self.homes.register_commands(context);
@@ -136,16 +212,31 @@ impl Plugin for UnifiedPlugin {
         self.spawn.register_commands(context);
         self.utility.register_commands(context);
         self.chat.register_commands(context);
+        self.chattab.register_commands(context);
+        self.holograms.register_commands(context);
+        self.portals.register_commands(context);
+        self.stafftools.register_commands(context);
+        self.interactiveblocks.register_commands(context);
+        self.playertracker.register_commands(context);
+        self.scheduler.register_commands(context);
 
         self.register_permissions(context);
 
         self.events.register_handlers(context);
+        self.stafftools
+            .register_events(context)
+            .expect("Failed to register stafftools event handlers");
 
         tracing::info!("pumpkin-unified-core loaded successfully!");
     }
 
     fn on_unload(&mut self, _context: &mut Context) {
         tracing::info!("Unloading pumpkin-unified-core...");
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.scheduler.shutdown().await.ok();
+            })
+        });
         self.storage.shutdown();
     }
 }
@@ -153,132 +244,299 @@ impl Plugin for UnifiedPlugin {
 impl UnifiedPlugin {
     fn register_permissions(&self, context: &mut Context) {
         let perms = vec![
-            ("essentials.balance", PermissionDefault::Allow),
-            ("essentials.balance.others", PermissionDefault::Op),
-            ("essentials.pay", PermissionDefault::Allow),
-            ("essentials.eco", PermissionDefault::Op),
-            ("essentials.eco.give", PermissionDefault::Op),
-            ("essentials.eco.take", PermissionDefault::Op),
-            ("essentials.eco.set", PermissionDefault::Op),
-            ("essentials.warp", PermissionDefault::Allow),
-            ("essentials.warp.others", PermissionDefault::Op),
-            ("essentials.setwarp", PermissionDefault::Op),
-            ("essentials.delwarp", PermissionDefault::Op),
-            ("essentials.warps", PermissionDefault::Allow),
-            ("essentials.warpinfo", PermissionDefault::Allow),
-            ("essentials.home", PermissionDefault::Allow),
-            ("essentials.home.others", PermissionDefault::Op),
-            ("essentials.sethome", PermissionDefault::Allow),
-            ("essentials.delhome", PermissionDefault::Allow),
-            ("essentials.homes", PermissionDefault::Allow),
-            ("essentials.homes.limit.*", PermissionDefault::Op),
-            ("essentials.tpa", PermissionDefault::Allow),
-            ("essentials.tpahere", PermissionDefault::Allow),
-            ("essentials.tpaccept", PermissionDefault::Allow),
-            ("essentials.tpdeny", PermissionDefault::Allow),
-            ("essentials.tptoggle", PermissionDefault::Allow),
-            ("essentials.kit", PermissionDefault::Allow),
-            ("essentials.kit.*", PermissionDefault::Op),
-            ("essentials.kits", PermissionDefault::Allow),
-            ("essentials.createkit", PermissionDefault::Op),
-            ("essentials.showkit", PermissionDefault::Op),
-            ("essentials.kick", PermissionDefault::Op),
-            ("essentials.ban", PermissionDefault::Op),
-            ("essentials.tempban", PermissionDefault::Op),
-            ("essentials.unban", PermissionDefault::Op),
-            ("essentials.mute", PermissionDefault::Op),
-            ("essentials.unmute", PermissionDefault::Op),
-            ("essentials.jail", PermissionDefault::Op),
-            ("essentials.unjail", PermissionDefault::Op),
-            ("essentials.setjail", PermissionDefault::Op),
-            ("essentials.deljail", PermissionDefault::Op),
-            ("essentials.jails", PermissionDefault::Op),
-            ("essentials.fly", PermissionDefault::Op),
-            ("essentials.fly.others", PermissionDefault::Op),
-            ("essentials.god", PermissionDefault::Op),
-            ("essentials.god.others", PermissionDefault::Op),
-            ("essentials.heal", PermissionDefault::Op),
-            ("essentials.heal.others", PermissionDefault::Op),
-            ("essentials.feed", PermissionDefault::Op),
-            ("essentials.feed.others", PermissionDefault::Op),
-            ("essentials.vanish", PermissionDefault::Op),
-            ("essentials.gamemode", PermissionDefault::Op),
-            ("essentials.gamemode.survival", PermissionDefault::Op),
-            ("essentials.gamemode.creative", PermissionDefault::Op),
-            ("essentials.gamemode.adventure", PermissionDefault::Op),
-            ("essentials.gamemode.spectator", PermissionDefault::Op),
-            ("essentials.spawn", PermissionDefault::Allow),
-            ("essentials.setspawn", PermissionDefault::Op),
-            ("essentials.afk", PermissionDefault::Allow),
-            ("essentials.afk.others", PermissionDefault::Op),
-            ("essentials.rules", PermissionDefault::Allow),
-            ("essentials.motd", PermissionDefault::Allow),
-            ("essentials.list", PermissionDefault::Allow),
-            ("essentials.whois", PermissionDefault::Op),
-            ("essentials.speed", PermissionDefault::Op),
-            ("essentials.speed.others", PermissionDefault::Op),
-            ("essentials.compass", PermissionDefault::Allow),
-            ("essentials.top", PermissionDefault::Allow),
-            ("essentials.back", PermissionDefault::Allow),
-            ("essentials.back.ondeath", PermissionDefault::Allow),
-            ("essentials.seen", PermissionDefault::Allow),
-            ("essentials.repair", PermissionDefault::Op),
-            ("essentials.repair.others", PermissionDefault::Op),
-            ("essentials.disposal", PermissionDefault::Op),
-            ("essentials.workbench", PermissionDefault::Allow),
-            ("essentials.anvil", PermissionDefault::Allow),
-            ("essentials.enderchest", PermissionDefault::Allow),
-            ("essentials.enderchest.others", PermissionDefault::Op),
-            ("essentials.weather", PermissionDefault::Op),
-            ("essentials.time", PermissionDefault::Op),
-            ("essentials.lightning", PermissionDefault::Op),
-            ("essentials.butcher", PermissionDefault::Op),
-            ("essentials.extinguish", PermissionDefault::Op),
-            ("essentials.msg", PermissionDefault::Allow),
-            ("essentials.reply", PermissionDefault::Allow),
-            ("essentials.mail", PermissionDefault::Allow),
-            ("essentials.mail.send", PermissionDefault::Allow),
-            ("essentials.broadcast", PermissionDefault::Op),
-            ("essentials.broadcastworld", PermissionDefault::Op),
-            ("luckperms.user.info", PermissionDefault::Op),
-            ("luckperms.user.editor", PermissionDefault::Op),
-            ("luckperms.user.promote", PermissionDefault::Op),
-            ("luckperms.user.demote", PermissionDefault::Op),
-            ("luckperms.user.showtracks", PermissionDefault::Op),
-            ("luckperms.user.clear", PermissionDefault::Op),
-            ("luckperms.user.clone", PermissionDefault::Op),
-            ("luckperms.user.permission", PermissionDefault::Op),
-            ("luckperms.user.parent", PermissionDefault::Op),
-            ("luckperms.user.meta", PermissionDefault::Op),
-            ("luckperms.group.info", PermissionDefault::Op),
-            ("luckperms.group.editor", PermissionDefault::Op),
-            ("luckperms.group.listmembers", PermissionDefault::Op),
-            ("luckperms.group.setweight", PermissionDefault::Op),
-            ("luckperms.group.setdisplayname", PermissionDefault::Op),
-            ("luckperms.group.showtracks", PermissionDefault::Op),
-            ("luckperms.group.clear", PermissionDefault::Op),
-            ("luckperms.group.rename", PermissionDefault::Op),
-            ("luckperms.group.clone", PermissionDefault::Op),
-            ("luckperms.group.permission", PermissionDefault::Op),
-            ("luckperms.group.parent", PermissionDefault::Op),
-            ("luckperms.group.meta", PermissionDefault::Op),
-            ("luckperms.track.createtrack", PermissionDefault::Op),
-            ("luckperms.track.deletetrack", PermissionDefault::Op),
-            ("luckperms.track.listtracks", PermissionDefault::Op),
-            ("luckperms.log.recent", PermissionDefault::Op),
-            ("luckperms.log.search", PermissionDefault::Op),
-            ("luckperms.log.notify", PermissionDefault::Op),
-            ("luckperms.sync", PermissionDefault::Op),
-            ("luckperms.info", PermissionDefault::Op),
-            ("luckperms.editor", PermissionDefault::Op),
-            ("luckperms.applyedits", PermissionDefault::Op),
-            ("luckperms.verbose", PermissionDefault::Op),
-            ("luckperms.tree", PermissionDefault::Op),
-            ("luckperms.search", PermissionDefault::Op),
-            ("luckperms.import", PermissionDefault::Op),
-            ("luckperms.export", PermissionDefault::Op),
-            ("luckperms.reloadconfig", PermissionDefault::Op),
-            ("luckperms.translations", PermissionDefault::Op),
+            ("pumpkin-unified-core.balance", PermissionDefault::Allow),
+            ("pumpkin-unified-core.balance.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.pay", PermissionDefault::Allow),
+            ("pumpkin-unified-core.eco", PermissionDefault::Op),
+            ("pumpkin-unified-core.eco.give", PermissionDefault::Op),
+            ("pumpkin-unified-core.eco.take", PermissionDefault::Op),
+            ("pumpkin-unified-core.eco.set", PermissionDefault::Op),
+            ("pumpkin-unified-core.warp", PermissionDefault::Allow),
+            ("pumpkin-unified-core.warp.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.setwarp", PermissionDefault::Op),
+            ("pumpkin-unified-core.delwarp", PermissionDefault::Op),
+            ("pumpkin-unified-core.warps", PermissionDefault::Allow),
+            ("pumpkin-unified-core.warpinfo", PermissionDefault::Allow),
+            ("pumpkin-unified-core.home", PermissionDefault::Allow),
+            ("pumpkin-unified-core.home.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.sethome", PermissionDefault::Allow),
+            ("pumpkin-unified-core.delhome", PermissionDefault::Allow),
+            ("pumpkin-unified-core.homes", PermissionDefault::Allow),
+            ("pumpkin-unified-core.homes.limit.*", PermissionDefault::Op),
+            ("pumpkin-unified-core.tpa", PermissionDefault::Allow),
+            ("pumpkin-unified-core.tpahere", PermissionDefault::Allow),
+            ("pumpkin-unified-core.tpaccept", PermissionDefault::Allow),
+            ("pumpkin-unified-core.tpdeny", PermissionDefault::Allow),
+            ("pumpkin-unified-core.tptoggle", PermissionDefault::Allow),
+            ("pumpkin-unified-core.kit", PermissionDefault::Allow),
+            ("pumpkin-unified-core.kit.*", PermissionDefault::Op),
+            ("pumpkin-unified-core.kits", PermissionDefault::Allow),
+            ("pumpkin-unified-core.createkit", PermissionDefault::Op),
+            ("pumpkin-unified-core.showkit", PermissionDefault::Op),
+            ("pumpkin-unified-core.kick", PermissionDefault::Op),
+            ("pumpkin-unified-core.ban", PermissionDefault::Op),
+            ("pumpkin-unified-core.tempban", PermissionDefault::Op),
+            ("pumpkin-unified-core.unban", PermissionDefault::Op),
+            ("pumpkin-unified-core.mute", PermissionDefault::Op),
+            ("pumpkin-unified-core.unmute", PermissionDefault::Op),
+            ("pumpkin-unified-core.jail", PermissionDefault::Op),
+            ("pumpkin-unified-core.unjail", PermissionDefault::Op),
+            ("pumpkin-unified-core.setjail", PermissionDefault::Op),
+            ("pumpkin-unified-core.deljail", PermissionDefault::Op),
+            ("pumpkin-unified-core.jails", PermissionDefault::Op),
+            ("pumpkin-unified-core.fly", PermissionDefault::Op),
+            ("pumpkin-unified-core.fly.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.god", PermissionDefault::Op),
+            ("pumpkin-unified-core.god.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.heal", PermissionDefault::Op),
+            ("pumpkin-unified-core.heal.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.feed", PermissionDefault::Op),
+            ("pumpkin-unified-core.feed.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.vanish", PermissionDefault::Op),
+            ("pumpkin-unified-core.gamemode", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.gamemode.survival",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.gamemode.creative",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.gamemode.adventure",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.gamemode.spectator",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.spawn", PermissionDefault::Allow),
+            ("pumpkin-unified-core.setspawn", PermissionDefault::Op),
+            ("pumpkin-unified-core.afk", PermissionDefault::Allow),
+            ("pumpkin-unified-core.afk.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.rules", PermissionDefault::Allow),
+            ("pumpkin-unified-core.motd", PermissionDefault::Allow),
+            ("pumpkin-unified-core.list", PermissionDefault::Allow),
+            ("pumpkin-unified-core.whois", PermissionDefault::Op),
+            ("pumpkin-unified-core.speed", PermissionDefault::Op),
+            ("pumpkin-unified-core.speed.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.compass", PermissionDefault::Allow),
+            ("pumpkin-unified-core.top", PermissionDefault::Allow),
+            ("pumpkin-unified-core.back", PermissionDefault::Allow),
+            (
+                "pumpkin-unified-core.back.ondeath",
+                PermissionDefault::Allow,
+            ),
+            ("pumpkin-unified-core.seen", PermissionDefault::Allow),
+            ("pumpkin-unified-core.repair", PermissionDefault::Op),
+            ("pumpkin-unified-core.repair.others", PermissionDefault::Op),
+            ("pumpkin-unified-core.disposal", PermissionDefault::Op),
+            ("pumpkin-unified-core.workbench", PermissionDefault::Allow),
+            ("pumpkin-unified-core.anvil", PermissionDefault::Allow),
+            ("pumpkin-unified-core.enderchest", PermissionDefault::Allow),
+            (
+                "pumpkin-unified-core.enderchest.others",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.weather", PermissionDefault::Op),
+            ("pumpkin-unified-core.time", PermissionDefault::Op),
+            ("pumpkin-unified-core.lightning", PermissionDefault::Op),
+            ("pumpkin-unified-core.butcher", PermissionDefault::Op),
+            ("pumpkin-unified-core.extinguish", PermissionDefault::Op),
+            ("pumpkin-unified-core.msg", PermissionDefault::Allow),
+            ("pumpkin-unified-core.reply", PermissionDefault::Allow),
+            ("pumpkin-unified-core.mail", PermissionDefault::Allow),
+            ("pumpkin-unified-core.mail.send", PermissionDefault::Allow),
+            ("pumpkin-unified-core.broadcast", PermissionDefault::Op),
+            ("pumpkin-unified-core.broadcastworld", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.*", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.vanish", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.invsee", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.staff.staffchat",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.staff.warn", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.warnings", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.delwarn", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.checkban", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.staff.checkmute",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.staff.freeze", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.unfreeze", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.staff.socialspy",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.staff.clearchat",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.staff.broadcaststaff",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.user.info", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.user.editor", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.user.promote",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.user.demote", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.user.showtracks",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.user.clear", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.user.clone", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.user.permission",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.user.parent", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.user.meta", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.group.info", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.group.editor",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.group.listmembers",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.group.setweight",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.group.setdisplayname",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.group.showtracks",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.group.clear", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.group.rename",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.group.clone", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.group.permission",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.group.parent",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.group.meta", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.track.createtrack",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.track.deletetrack",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.track.listtracks",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.lp.log.recent", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.log.search", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.log.notify", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.sync", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.info", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.editor", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.applyedits", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.verbose", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.tree", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.search", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.import", PermissionDefault::Op),
+            ("pumpkin-unified-core.lp.export", PermissionDefault::Op),
+            (
+                "pumpkin-unified-core.lp.reloadconfig",
+                PermissionDefault::Op,
+            ),
+            (
+                "pumpkin-unified-core.lp.translations",
+                PermissionDefault::Op,
+            ),
+            ("pumpkin-unified-core.scheduler.create", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.remove", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.list", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.enable", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.disable", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.run", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.edit", PermissionDefault::Op),
+            ("pumpkin-unified-core.scheduler.reload", PermissionDefault::Op),
+            // Holograms (HoloManager)
+            ("pumpkin-unified-core.hologram.create", PermissionDefault::Op),
+            ("pumpkin-unified-core.hologram.remove", PermissionDefault::Op),
+            ("pumpkin-unified-core.hologram.list", PermissionDefault::Allow),
+            ("pumpkin-unified-core.hologram.teleport", PermissionDefault::Op),
+            ("pumpkin-unified-core.hologram.edit", PermissionDefault::Op),
+            ("pumpkin-unified-core.hologram.move", PermissionDefault::Op),
+            ("pumpkin-unified-core.hologram.copy", PermissionDefault::Op),
+            ("pumpkin-unified-core.hologram.readtext", PermissionDefault::Op),
+            // Portals (PortalBuilder)
+            ("pumpkin-unified-core.portal.create", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.remove", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.list", PermissionDefault::Allow),
+            ("pumpkin-unified-core.portal.setdestination", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.setcommand", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.setparticle", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.setmaterial", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.setcooldown", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.setpermission", PermissionDefault::Op),
+            ("pumpkin-unified-core.portal.teleport", PermissionDefault::Op),
+            // StaffTools (StaffTools/ModSuite)
+            ("pumpkin-unified-core.staff.vanish", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.invsee", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.staffchat", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.warn", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.warnings", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.delwarn", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.checkban", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.checkmute", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.freeze", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.unfreeze", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.socialspy", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.clearchat", PermissionDefault::Op),
+            ("pumpkin-unified-core.staff.broadcaststaff", PermissionDefault::Op),
+            // InteractiveBlocks (Elevator + ArmorStandTools)
+            ("pumpkin-unified-core.interactive.elevator.create", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.elevator.remove", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.elevator.list", PermissionDefault::Allow),
+            ("pumpkin-unified-core.interactive.elevator.setfloor", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.elevator.setmaterial", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.armorstand.pose", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.armorstand.remove", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.armorstand.list", PermissionDefault::Allow),
+            ("pumpkin-unified-core.interactive.commandsign.create", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.commandsign.remove", PermissionDefault::Op),
+            ("pumpkin-unified-core.interactive.commandsign.list", PermissionDefault::Allow),
+            // PlayerTracker (PlayerTracker/AuditLog)
+            ("pumpkin-unified-core.tracker.playtime", PermissionDefault::Allow),
+            ("pumpkin-unified-core.tracker.playtime.top", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.seen", PermissionDefault::Allow),
+            ("pumpkin-unified-core.tracker.firstjoin", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.iphistory", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.session", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.auditlog", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.auditlog.block", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.auditlog.item", PermissionDefault::Op),
+            ("pumpkin-unified-core.tracker.auditlog.command", PermissionDefault::Op),
+            // ChatTab (Chat & Tab Formatter)
+            ("pumpkin-unified-core.chattab.format", PermissionDefault::Op),
+            ("pumpkin-unified-core.chattab.tab", PermissionDefault::Op),
+            ("pumpkin-unified-core.chattab.channel", PermissionDefault::Allow),
+            ("pumpkin-unified-core.chattab.hex", PermissionDefault::Allow),
+            ("pumpkin-unified-core.chattab.hover", PermissionDefault::Allow),
         ];
 
         for (name, default) in perms {

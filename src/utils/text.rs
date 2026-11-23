@@ -1,17 +1,18 @@
-use pumpkin_plugin_api::text::{TextComponent, Color};
+use pumpkin_plugin_api::text::{Color, TextComponent};
 use std::collections::HashMap;
 
 pub fn format_text(text: &str) -> TextComponent {
     let mut component = TextComponent::empty();
     let mut current = String::new();
     let mut chars = text.chars().peekable();
-    
+
     while let Some(c) = chars.next() {
         if c == '&' || c == '§' {
             if let Some(&next) = chars.peek() {
                 if let Some(color) = parse_color_code(next) {
                     if !current.is_empty() {
-                        component = component.add_child(TextComponent::text(current.clone()).color(color));
+                        component =
+                            component.add_child(TextComponent::text(current.clone()).color(color));
                         current.clear();
                     }
                     chars.next();
@@ -21,11 +22,11 @@ pub fn format_text(text: &str) -> TextComponent {
         }
         current.push(c);
     }
-    
+
     if !current.is_empty() {
         component = component.add_child(TextComponent::text(current));
     }
-    
+
     component
 }
 
@@ -65,6 +66,33 @@ pub fn replace_placeholders(text: &str, placeholders: &HashMap<String, String>) 
     result
 }
 
-pub fn format_with_placeholders(text: &str, placeholders: &HashMap<String, String>) -> TextComponent {
+pub fn format_with_placeholders(
+    text: &str,
+    placeholders: &HashMap<String, String>,
+) -> TextComponent {
     format_text(&replace_placeholders(text, placeholders))
+}
+
+pub fn process_hex_colors(text: &str) -> String {
+    let mut result = String::new();
+    let mut chars = text.chars().peekable();
+    
+    while let Some(c) = chars.next() {
+        if c == '#' {
+            // Check if next 6 chars are valid hex
+            let hex: String = chars.by_ref().take(6).collect();
+            if hex.len() == 6 && hex.chars().all(|c| c.is_ascii_hexdigit()) {
+                result.push_str(&format!("&#{}", hex));
+                continue;
+            } else {
+                // Not a valid hex color, restore
+                result.push('#');
+                result.push_str(&hex);
+                continue;
+            }
+        }
+        result.push(c);
+    }
+    
+    result
 }

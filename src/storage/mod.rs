@@ -5,22 +5,26 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 
-pub mod sqlite;
-pub mod redis;
 pub mod mysql;
+pub mod redis;
+pub mod sqlite;
 
 #[async_trait]
 pub trait Storage: Send + Sync {
     async fn init(&self) -> Result<()>;
     async fn shutdown(&self);
-    
+
     async fn get(&self, table: &str, key: &str) -> Result<Option<Vec<u8>>>;
     async fn set(&self, table: &str, key: &str, value: &[u8]) -> Result<()>;
     async fn delete(&self, table: &str, key: &str) -> Result<()>;
     async fn exists(&self, table: &str, key: &str) -> Result<bool>;
     async fn keys(&self, table: &str, pattern: &str) -> Result<Vec<String>>;
-    
-    async fn query(&self, sql: &str, params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<Vec<HashMap<String, serde_json::Value>>>;
+
+    async fn query(
+        &self,
+        sql: &str,
+        params: &[&dyn sqlx::Encode<'_, sqlx::Any>],
+    ) -> Result<Vec<HashMap<String, serde_json::Value>>>;
     async fn execute(&self, sql: &str, params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<u64>;
 }
 
@@ -33,10 +37,19 @@ pub enum StorageBackend {
 impl StorageBackend {
     pub async fn new(config: &crate::config::StorageConfig) -> Result<Self> {
         match config.backend.as_str() {
-            "sqlite" => Ok(StorageBackend::Sqlite(sqlite::SqliteStorage::new(&config.sqlite).await?)),
-            "redis" => Ok(StorageBackend::Redis(redis::RedisStorage::new(&config.redis).await?)),
-            "mysql" | "postgres" => Ok(StorageBackend::Mysql(mysql::MysqlStorage::new(&config.mysql).await?)),
-            _ => Err(anyhow::anyhow!("Unknown storage backend: {}", config.backend)),
+            "sqlite" => Ok(StorageBackend::Sqlite(
+                sqlite::SqliteStorage::new(&config.sqlite).await?,
+            )),
+            "redis" => Ok(StorageBackend::Redis(
+                redis::RedisStorage::new(&config.redis).await?,
+            )),
+            "mysql" | "postgres" => Ok(StorageBackend::Mysql(
+                mysql::MysqlStorage::new(&config.mysql).await?,
+            )),
+            _ => Err(anyhow::anyhow!(
+                "Unknown storage backend: {}",
+                config.backend
+            )),
         }
     }
 }
@@ -99,7 +112,11 @@ impl Storage for StorageBackend {
         }
     }
 
-    async fn query(&self, sql: &str, params: &[&dyn sqlx::Encode<'_, sqlx::Any>]) -> Result<Vec<HashMap<String, serde_json::Value>>> {
+    async fn query(
+        &self,
+        sql: &str,
+        params: &[&dyn sqlx::Encode<'_, sqlx::Any>],
+    ) -> Result<Vec<HashMap<String, serde_json::Value>>> {
         match self {
             StorageBackend::Sqlite(s) => s.query(sql, params).await,
             StorageBackend::Redis(s) => s.query(sql, params).await,
@@ -124,7 +141,9 @@ impl StorageManager {
     pub fn new(config: &crate::config::Config) -> Self {
         let backend = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                StorageBackend::new(&config.storage).await.expect("Failed to create storage backend")
+                StorageBackend::new(&config.storage)
+                    .await
+                    .expect("Failed to create storage backend")
             })
         });
         Self { backend }

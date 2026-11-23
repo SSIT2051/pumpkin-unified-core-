@@ -1,0 +1,119 @@
+---
+title: "Installation"
+description: "Install Pumpkin Unified Core on your PumpkinMC server"
+---
+
+# Installation
+
+## Prerequisites
+
+- PumpkinMC server (version 0.2.0+)
+- WASM plugin support enabled in `server.properties`
+- Java 21+ (for PumpkinMC server)
+
+## Download
+
+### Option 1: Pre-built Release (Recommended)
+
+1. Go to [GitHub Releases](https://github.com/your-repo/pumpkin-unified/releases)
+2. Download `pumpkin_unified_core.wasm` for your PumpkinMC version
+3. Place in your server's `plugins/` directory
+
+```bash
+mkdir -p plugins
+wget https://github.com/your-repo/pumpkin-unified/releases/latest/download/pumpkin_unified_core.wasm
+mv pumpkin_unified_core.wasm plugins/
+```
+
+### Option 2: Build from Source
+
+```bash
+git clone https://github.com/your-repo/pumpkin-unified
+cd pumpkin-unified
+cargo build --release --target wasm32-wasip2 --package pumpkin-unified-core
+cp target/wasm32-wasip2/release/pumpkin_unified_core.wasm /path/to/server/plugins/
+```
+
+## Server Configuration
+
+Enable WASM plugins in `server.properties`:
+
+```properties
+# Enable plugin system
+plugin-enabled=true
+plugin-directory=plugins
+
+# WASM configuration
+wasm-enabled=true
+wasm-fuel-limit=1000000000
+```
+
+## First Run
+
+1. Start your PumpkinMC server
+2. PUC will auto-generate default configuration at:
+   ```
+   config/pumpkin-unified-core/config.toml
+   config/pumpkin-unified-core/config.yml
+   ```
+3. Check logs for "pumpkin-unified-core loaded successfully!"
+4. Run `/puc reload` in console to apply any config changes
+
+## Directory Structure
+
+After first run:
+```
+server-root/
+├── plugins/
+│   └── pumpkin_unified_core.wasm
+├── config/
+│   └── pumpkin-unified-core/
+│       ├── config.toml
+│       └── config.yml
+└── plugins/pumpkin-unified-core/
+    └── data.db (SQLite database)
+```
+
+## Verification
+
+Run these commands in-game or console:
+
+```bash
+# Check plugin loaded
+/puc version
+
+# Check economy
+/balance
+
+# Check permissions (requires OP)
+/lp help
+
+# List all commands
+/help pumpkin-unified-core
+```
+
+## Troubleshooting
+
+### Plugin not loading
+
+- Check `server.log` for "pumpkin-unified-core" entries
+- Verify WASM file is in `plugins/` directory
+- Check PumpkinMC version compatibility
+
+### Permission errors
+
+- Default config uses `pumpkin-unified-core.*` permissions
+- OP players have all permissions by default
+- Use `/lp user <name> permission set pumpkin-unified-core.* true`
+
+### Database errors
+
+- Default: SQLite at `plugins/pumpkin-unified-core/data.db`
+- Ensure write permissions on plugins directory
+- For Redis/MySQL, update `config.toml` storage section
+
+## Next Steps
+
+- [Configuration](/getting-started/configuration) - Customize PUC for your server
+- [Permissions](/getting-started/permissions) - Set up permission groups
+- [Modules Overview](/modules/overview) - Explore all features

@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub fn register(module: Arc<HomesModule>, context: &mut Context) {
     let module_clone = module.clone();
     let sethome_cmd = Command::new("sethome")
-        .permission("essentials.sethome")
+        .permission("pumpkin-unified-core.sethome")
         .description("Set a home")
         .argument("name")
         .handler(async_handler!(move |sender, _server, args| {
@@ -47,7 +47,7 @@ pub fn register(module: Arc<HomesModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let home_cmd = Command::new("home")
-        .permission("essentials.home")
+        .permission("pumpkin-unified-core.home")
         .description("Teleport to a home")
         .argument("name")
         .handler(async_handler!(move |sender, server, args| {
@@ -67,7 +67,7 @@ pub fn register(module: Arc<HomesModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let delhome_cmd = Command::new("delhome")
-        .permission("essentials.delhome")
+        .permission("pumpkin-unified-core.delhome")
         .description("Delete a home")
         .argument("name")
         .handler(async_handler!(move |sender, _server, args| {
@@ -84,7 +84,7 @@ pub fn register(module: Arc<HomesModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let homes_cmd = Command::new("homes")
-        .permission("essentials.homes")
+        .permission("pumpkin-unified-core.homes")
         .description("List your homes")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;

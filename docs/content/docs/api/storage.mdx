@@ -1,0 +1,178 @@
+---
+title: "Storage API"
+description: "Storage backend abstraction and usage"
+---
+
+# Storage API
+
+PUC provides a unified storage abstraction supporting SQLite, Redis, and MySQL/PostgreSQL.
+
+## StorageManager
+
+Main entry point for storage operations:
+
+```rust
+use crate::storage::{StorageManager, StorageBackend, SerializedData};
+
+// Initialize
+let config = Config::load();
+let storage = StorageManager::new(&config);
+
+// Initialize tables
+storage.init().await?;
+
+// Get backend for direct access
+let backend = storage.backend();
+```
+
+## StorageBackend Trait
+
+All backends implement this trait:
+
+```rust
+pub trait StorageBackend: Send + Sync {
+    async fn get(&self, table: &str, key: &str) -> Result<Option<Vec<u8>>>;
+    async fn set(&self, table: &str, key: &str, value: &[u8]) -> Result<()>;
+    async fn delete(&self, table: &str, key: &str) -> Result<()>;
+    async fn keys(&self, table: &str, pattern: &str) -> Result<Vec<String>>;
+}
+```
+
+## SerializedData
+
+Wrapper for type-safe serialization:
+
+```rust
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+struct MyData {
+    field1: String,
+    field2: i32,
+}
+
+// Serialize
+let data = SerializedData::new(MyData { ... });
+let bytes = data.serialize()?;
+
+// Deserialize
+let data: SerializedData<MyData> = SerializedData::deserialize(&bytes)?;
+let my_data = data.data;
+```
+
+## Usage in Modules
+
+```rust
+// In module implementation
+pub struct MyModule {
+    storage: Arc<StorageBackend>,
+}
+
+impl MyModule {
+    async fn save_data(&self, key: &str, data: &MyData) -> Result<()> {
+        let serialized = SerializedData::new(data.clone()).serialize()?;
+        self.storage.set("my_table", key, &serialized).await
+    }
+
+    async fn load_data(&self, key: &str) -> Result<Option<MyData>> {
+        if let Some(bytes) = self.storage.get("my_table", key).await? {
+            let data: SerializedData<MyData> = SerializedData::deserialize(&bytes)?;
+            Ok(Some(data.data))
+        } else {
+            Ok(None)
+        }
+    }
+
+    async fn list_all(&self) -> Result<Vec<MyData>> {
+        let keys = self.storage.keys("my_table", "%").await?;
+        let mut results = Vec::new();
+        for key in keys {
+            if let Some(data) = self.load_data(&key).await? {
+                results.push(data);
+            }
+        }
+        Ok(results)
+    }
+}
+```
+
+## Cache Pattern
+
+Modules typically use DashMap for caching:
+
+```rust
+use dashmap::DashMap;
+
+struct MyModule {
+    storage: Arc<StorageBackend>,
+    cache: Arc<DashMap<String, MyData>>,
+}
+
+impl MyModule {
+    async fn get(&self, key: &str) -> Result<Option<MyData>> {
+        // Check cache first
+        if let Some(cached) = self.cache.get(key) {
+            return Ok(Some(cached.clone()));
+        }
+
+        // Load from storage
+        if let Some(data) = self.load_from_storage(key).await? {
+            self.cache.insert(key.to_string(), data.clone());
+            return Ok(Some(data));
+        }
+
+        Ok(None)
+    }
+}
+```
+
+## Table Naming Convention
+
+| Module | Table Prefix |
+|--------|--------------|
+| Economy | `economy` |
+| Warps | `warps` |
+| Homes | `homes` |
+| Kits | `kits` |
+| Moderation | `mutes`, `jails` |
+| Permissions | `users`, `groups`, `tracks`, `logs` |
+| Holograms | `holograms` |
+| Portals | `portals` |
+| Staff Tools | `warnings` |
+| Interactive Blocks | `interactiveblocks_*` |
+| Scheduler | `scheduler_tasks` |
+| Player Tracker | `playertracker_*` |
+| Chat & Tab | `chattab_channels` |
+
+## Backend-Specific Notes
+
+### SQLite
+- Default backend
+- File-based, no external dependencies
+- Good for small-medium servers
+- Path: `plugins/pumpkin-unified-core/data.db`
+
+### Redis
+- High performance
+- Requires Redis server
+- Good for clustered setups
+- Connection pooling supported
+
+### MySQL/PostgreSQL
+- Persistent, relational
+- Good for external tools/websites
+- Requires database server
+- Supports migrations
+
+## Migration
+
+For schema changes:
+1. Add version to module
+2. Implement migration in `StorageManager::init()`
+3. Use `sqlx::migrate!` for SQL backends
+4. Handle gracefully for SQLite
+
+## Next
+
+- [Events API](/api/events)
+- [Advanced Placeholders](/advanced/placeholders)

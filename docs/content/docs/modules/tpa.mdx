@@ -1,0 +1,113 @@
+---
+title: "TPA Module"
+description: "Teleport requests with accept/deny and cross-world support"
+---
+
+# TPA Module
+
+**Replaces:** EssentialsX TPA  
+**Config Section:** `tpa`  
+**Permission Prefix:** `pumpkin-unified-core.tpa`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/tpa <player>` | `pumpkin-unified-core.tpa` | Request to teleport to player |
+| `/tpahere <player>` | `pumpkin-unified-core.tpahere` | Request player to teleport to you |
+| `/tpaccept` | `pumpkin-unified-core.tpaccept` | Accept teleport request |
+| `/tpdeny` | `pumpkin-unified-core.tpdeny` | Deny teleport request |
+| `/tptoggle` | `pumpkin-unified-core.tptoggle` | Toggle receiving requests |
+
+## Configuration
+
+```toml
+[tpa]
+request_timeout = 30          # Seconds before request expires
+teleport_cooldown = 5         # Cooldown between teleports
+cross_world = true            # Allow cross-world teleports
+```
+
+## Examples
+
+```bash
+# Request to teleport to Steve
+/tpa Steve
+# Output: Teleport request sent to Steve
+# Steve sees: "Notch wants to teleport to you. Use /tpaccept or /tpdeny"
+
+# Request Steve to teleport to you
+/tpahere Steve
+# Output: Teleport request sent to Steve
+# Steve sees: "Notch wants you to teleport to them. Use /tpaccept or /tpdeny"
+
+# Accept request (Steve runs)
+/tpaccept
+# Output: Accepted teleport request from Notch
+
+# Deny request
+/tpdeny
+# Output: Denied teleport request
+
+# Toggle receiving requests
+/tptoggle
+# Output: Teleport requests disabled
+# Run again: Teleport requests enabled
+```
+
+## Request Flow
+
+1. Player A runs `/tpa PlayerB` or `/tpahere PlayerB`
+2. Player B receives request with 30s timeout (configurable)
+3. Player B runs `/tpaccept` or `/tpdeny`
+4. On accept: teleport executes (respects cooldown)
+5. On deny/timeout: request cancelled
+
+## Cross-World Teleports
+
+When `cross_world = true`:
+- Teleports work across dimensions
+- World change handled automatically
+- Coordinates preserved
+
+When `cross_world = false`:
+- Requests denied if players in different worlds
+- Error: "Cannot teleport across worlds"
+
+## Cooldowns
+
+- `teleport_cooldown`: Minimum time between successful teleports
+- Applies per player
+- Bypassed by `pumpkin-unified-core.tpa.bypass.cooldown` (Op)
+
+## Storage
+
+TPA requests stored in memory (not persistent):
+- Cleared on server restart
+- Auto-expire after `request_timeout`
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.tpa true
+/lp group default permission set pumpkin-unified-core.tpahere true
+/lp group default permission set pumpkin-unified-core.tpaccept true
+/lp group default permission set pumpkin-unified-core.tpdeny true
+/lp group default permission set pumpkin-unified-core.tptoggle true
+
+# Staff - bypass cooldown
+/lp group mod permission set pumpkin-unified-core.tpa.bypass.cooldown true
+```
+
+## Notes
+
+- Cannot teleport to yourself
+- Requests expire after timeout
+- Only one pending request per target
+- Cross-world requires `cross_world = true`
+
+## Next
+
+- [Kits Module](/modules/kits)
+- [Configuration](/getting-started/configuration)

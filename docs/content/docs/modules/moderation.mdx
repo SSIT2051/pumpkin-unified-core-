@@ -1,0 +1,174 @@
+---
+title: "Moderation Module"
+description: "Player management: kick, ban, mute, jail, fly, god, vanish"
+---
+
+# Moderation Module
+
+**Replaces:** EssentialsX + LiteBans  
+**Config Section:** `moderation`  
+**Permission Prefix:** `pumpkin-unified-core`
+
+## Commands
+
+### Player Management
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/kick <player> [reason]` | `pumpkin-unified-core.kick` | Kick player |
+| `/ban <player> [reason]` | `pumpkin-unified-core.ban` | Ban player permanently |
+| `/tempban <player> <duration> [reason]` | `pumpkin-unified-core.tempban` | Temporary ban |
+| `/unban <player>` | `pumpkin-unified-core.unban` | Unban player |
+| `/mute <player> [reason]` | `pumpkin-unified-core.mute` | Mute player |
+| `/unmute <player>` | `pumpkin-unified-core.unmute` | Unmute player |
+| `/jail <player> [reason]` | `pumpkin-unified-core.jail` | Jail player |
+| `/unjail <player>` | `pumpkin-unified-core.unjail` | Unjail player |
+| `/setjail` | `pumpkin-unified-core.setjail` | Set jail location |
+| `/deljail` | `pumpkin-unified-core.deljail` | Delete jail location |
+| `/jails` | `pumpkin-unified-core.jails` | List jails |
+
+### Player Effects
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/fly [player]` | `pumpkin-unified-core.fly` | Toggle flight |
+| `/fly <player>` | `pumpkin-unified-core.fly.others` | Toggle other's flight |
+| `/god [player]` | `pumpkin-unified-core.god` | Toggle god mode |
+| `/god <player>` | `pumpkin-unified-core.god.others` | Toggle other's god mode |
+| `/heal [player]` | `pumpkin-unified-core.heal` | Heal player |
+| `/heal <player>` | `pumpkin-unified-core.heal.others` | Heal other player |
+| `/feed [player]` | `pumpkin-unified-core.feed` | Feed player |
+| `/feed <player>` | `pumpkin-unified-core.feed.others` | Feed other player |
+| `/vanish` | `pumpkin-unified-core.vanish` | Toggle vanish |
+
+## Configuration
+
+```toml
+[moderation]
+ban_message = "You have been banned from this server."
+mute_message = "You have been muted."
+jail_message = "You have been jailed."
+# jail_location = { world = "world", x = 0, y = 64, z = 0, yaw = 0, pitch = 0 }
+max_tempban_duration = 2592000    # 30 days max
+max_tempmute_duration = 2592000   # 30 days max
+```
+
+## Duration Format
+
+Supports multiple formats:
+- `30s` - 30 seconds
+- `10m` - 10 minutes
+- `2h` - 2 hours
+- `1d` - 1 day
+- `1w` - 1 week
+- `30d` - 30 days
+
+## Examples
+
+```bash
+# Kick player
+/kick Hacker "No cheating allowed"
+# Output: Kicked Hacker: No cheating allowed
+
+# Permanent ban
+/ban Hacker "Using x-ray"
+# Output: Banned Hacker: Using x-ray
+
+# Temporary ban (1 hour)
+/tempban Hacker 1h "Fly hacking"
+# Output: Temporarily banned Hacker for 1h: Fly hacking
+
+# Unban
+/unban Hacker
+# Output: Unbanned Hacker
+
+# Mute (permanent)
+/mute Spammer "Chat spam"
+# Output: Muted Spammer: Chat spam
+
+# Temporary mute (10 minutes)
+/mute Spammer 10m "Caps lock"
+# Output: Muted Spammer for 10m: Caps lock
+
+# Jail player
+/jail Griefers "Griefing base"
+# Output: Jailed Griefers: Griefing base
+
+# Set jail location
+/setjail
+# Output: Jail location set
+
+# Toggle flight
+/fly
+# Output: Flight enabled
+
+# Toggle god mode
+/god
+# Output: God mode enabled
+
+# Heal yourself
+/heal
+# Output: Healed yourself
+
+# Heal another player
+/heal Steve
+# Output: Healed Steve
+
+# Feed player
+/feed Steve
+# Output: Fed Steve
+
+# Toggle vanish
+/vanish
+# Output: You are now vanished
+```
+
+## Jail System
+
+- `/setjail` sets jail at your location
+- `/jail <player>` teleports to jail
+- Jailed players cannot teleport or use commands
+- `/unjail` releases and returns to previous location
+
+## Vanish
+
+- Hides player from others
+- Removes from tab list
+- Silent join/leave messages
+- Can still interact with world
+
+## Storage
+
+- Bans: `bans` table (uses PumpkinMC ban manager)
+- Mutes: `mutes` table
+- Jails: `jails` table
+- All persistent across restarts
+
+## Permissions Setup
+
+```bash
+# Moderators
+/lp group mod permission set pumpkin-unified-core.kick true
+/lp group mod permission set pumpkin-unified-core.mute true
+/lp group mod permission set pumpkin-unified-core.jail true
+/lp group mod permission set pumpkin-unified-core.tempban true
+
+# Admins
+/lp group admin permission set pumpkin-unified-core.ban true
+/lp group admin permission set pumpkin-unified-core.unban true
+/lp group admin permission set pumpkin-unified-core.fly true
+/lp group admin permission set pumpkin-unified-core.god true
+/lp group admin permission set pumpkin-unified-core.vanish true
+```
+
+## Notes
+
+- Temp bans/mutes auto-expire
+- Max duration limited by config
+- Reasons shown to target player
+- Staff can see vanish players with permission
+
+## Next
+
+- [Gamemode Module](/modules/gamemode)
+- [Staff Tools Module](/modules/stafftools)

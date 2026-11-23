@@ -12,7 +12,7 @@ pub fn register(module: Arc<GamemodeModule>, context: &mut Context) {
     let module_clone = module.clone();
     let gamemode_cmd = Command::new("gamemode")
         .alias("gm")
-        .permission("essentials.gamemode")
+        .permission("pumpkin-unified-core.gamemode")
         .description("Change gamemode")
         .argument("mode")
         .argument("player")
@@ -54,10 +54,10 @@ pub fn register(module: Arc<GamemodeModule>, context: &mut Context) {
     context.register_command(gamemode_cmd);
 
     for (alias, mode, perm) in [
-        ("gmc", "creative", "essentials.gamemode.creative"),
-        ("gms", "survival", "essentials.gamemode.survival"),
-        ("gma", "adventure", "essentials.gamemode.adventure"),
-        ("gmsp", "spectator", "essentials.gamemode.spectator"),
+        ("gmc", "creative", "pumpkin-unified-core.gamemode.creative"),
+        ("gms", "survival", "pumpkin-unified-core.gamemode.survival"),
+        ("gma", "adventure", "pumpkin-unified-core.gamemode.adventure"),
+        ("gmsp", "spectator", "pumpkin-unified-core.gamemode.spectator"),
     ] {
         let module_clone = module.clone();
         let cmd = Command::new(alias)

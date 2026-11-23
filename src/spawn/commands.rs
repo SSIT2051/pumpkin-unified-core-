@@ -11,7 +11,7 @@ use std::sync::Arc;
 pub fn register(module: Arc<SpawnModule>, context: &mut Context) {
     let module_clone = module.clone();
     let spawn_cmd = Command::new("spawn")
-        .permission("essentials.spawn")
+        .permission("pumpkin-unified-core.spawn")
         .description("Teleport to spawn")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
@@ -29,7 +29,7 @@ pub fn register(module: Arc<SpawnModule>, context: &mut Context) {
 
     let module_clone = module.clone();
     let setspawn_cmd = Command::new("setspawn")
-        .permission("essentials.setspawn")
+        .permission("pumpkin-unified-core.setspawn")
         .description("Set the spawn point")
         .handler(async_handler!(move |sender, _server, _args| {
             let player = sender.as_player().ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;

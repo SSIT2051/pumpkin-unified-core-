@@ -1,0 +1,219 @@
+---
+title: "Utility Module"
+description: "20+ utility commands for server management"
+---
+
+# Utility Module
+
+**Replaces:** EssentialsX Utility  
+**Config Section:** `utility`  
+**Permission Prefix:** `pumpkin-unified-core`
+
+## Commands
+
+| Command | Aliases | Permission | Description |
+|---------|---------|------------|-------------|
+| `/afk [player]` | - | `pumpkin-unified-core.afk` | Toggle AFK |
+| `/rules` | - | `pumpkin-unified-core.rules` | Show server rules |
+| `/motd` | - | `pumpkin-unified-core.motd` | Show MOTD |
+| `/list` | `/who` | `pumpkin-unified-core.list` | List online players |
+| `/whois <player>` | - | `pumpkin-unified-core.whois` | Player information |
+| `/speed [player] <speed>` | - | `pumpkin-unified-core.speed` | Set walk/fly speed |
+| `/compass` | - | `pumpkin-unified-core.compass` | Get compass to spawn |
+| `/top` | - | `pumpkin-unified-core.top` | Teleport to highest block |
+| `/back` | - | `pumpkin-unified-core.back` | Teleport to previous location |
+| `/seen <player>` | - | `pumpkin-unified-core.seen` | Last seen time |
+| `/repair` | - | `pumpkin-unified-core.repair` | Repair held item |
+| `/disposal` | - | `pumpkin-unified-core.disposal` | Open trash inventory |
+| `/workbench` | `/wb` | `pumpkin-unified-core.workbench` | Open crafting table |
+| `/anvil` | - | `pumpkin-unified-core.anvil` | Open anvil |
+| `/enderchest [player]` | `/echest` | `pumpkin-unified-core.enderchest` | Open ender chest |
+| `/weather <type> [duration]` | - | `pumpkin-unified-core.weather` | Change weather |
+| `/time <value>` | - | `pumpkin-unified-core.time` | Change time |
+| `/butcher [radius]` | - | `pumpkin-unified-core.butcher` | Kill nearby mobs |
+| `/extinguish [radius]` | - | `pumpkin-unified-core.extinguish` | Extinguish fires |
+
+## Configuration
+
+```toml
+[utility]
+afk_timeout = 300               # Seconds before auto-AFK
+# afk_kick_timeout = 600        # Seconds before AFK kick (optional)
+motd = "Welcome to the server!" # Message of the day
+rules = [                       # Server rules
+  "Be respectful",
+  "No cheating",
+  "No griefing"
+]
+max_players = 20                # Shown in /list
+```
+
+## Examples
+
+```bash
+# Toggle AFK
+/afk
+# Output: You are now AFK
+
+# Check another player's AFK
+/afk Steve
+# Output: Steve is now AFK
+
+# Show rules
+/rules
+# Output:
+# 1. Be respectful
+# 2. No cheating
+# 3. No griefing
+
+# Show MOTD
+/motd
+# Output: Welcome to the server!
+
+# List players
+/list
+# Output: Online players (5/20):
+# - [OP] Notch
+# - Steve
+# - Alex
+
+# Player info
+/whois Steve
+# Output:
+# Name: Steve
+# UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# Gamemode: Survival
+# Health: 20/20
+# Food: 20
+# OP: false
+# AFK: false
+
+# Set speed (0-10)
+/speed 2
+/speed Steve 5
+
+# Get compass pointing to spawn
+/compass
+# Output: Given a compass
+
+# Teleport to highest block
+/top
+# Output: Teleported to top block
+
+# Return to previous location
+/back
+# Output: Teleported to previous location
+
+# Check when player was last online
+/seen Notch
+# Output: Notch was last seen 2h ago
+
+# Repair held item
+/repair
+# Output: Item repaired
+
+# Open disposal (trash)
+/disposal
+
+# Open crafting table
+/workbench
+
+# Open anvil
+/anvil
+
+# Open ender chest
+/enderchest
+/enderchest Steve  # Open other's ender chest (admin)
+
+# Change weather (clear, rain, thunder)
+/weather clear
+/weather rain 6000      # 6000 ticks = 5 minutes
+/weather thunder 12000
+
+# Change time
+/time day
+/time night
+/time noon
+/time midnight
+/time 6000             # Set exact ticks
+/time set 1000
+
+# Kill nearby mobs
+/butcher
+/butcher 50            # 50 block radius
+
+# Extinguish fires
+/extinguish
+/extinguish 32         # 32 block radius
+```
+
+## Weather Types
+
+| Type | Description |
+|------|-------------|
+| `clear` | Sunny, no precipitation |
+| `rain` | Rain (snow in cold biomes) |
+| `thunder` | Thunderstorm |
+
+## Time Values
+
+| Value | Ticks | Description |
+|-------|-------|-------------|
+| `day` | 1000 | Morning |
+| `noon` | 6000 | Midday |
+| `night` | 13000 | Night start |
+| `midnight` | 18000 | Midnight |
+
+## AFK System
+
+- Auto-AFK after `afk_timeout` seconds of inactivity
+- AFK players: hidden from `/list` (configurable), no idle timeout
+- Optional kick after `afk_kick_timeout`
+- `/afk` toggles manually
+
+## Speed Limits
+
+- Walk speed: 0.0 - 10.0 (default ~0.2)
+- Fly speed: 0.0 - 10.0 (default ~0.1)
+- Values above 1.0 are very fast
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.afk true
+/lp group default permission set pumpkin-unified-core.rules true
+/lp group default permission set pumpkin-unified-core.motd true
+/lp group default permission set pumpkin-unified-core.list true
+/lp group default permission set pumpkin-unified-core.compass true
+/lp group default permission set pumpkin-unified-core.top true
+/lp group default permission set pumpkin-unified-core.back true
+/lp group default permission set pumpkin-unified-core.seen true
+/lp group default permission set pumpkin-unified-core.workbench true
+/lp group default permission set pumpkin-unified-core.anvil true
+/lp group default permission set pumpkin-unified-core.enderchest true
+
+# VIP
+/lp group vip permission set pumpkin-unified-core.repair true
+/lp group vip permission set pumpkin-unified-core.speed true
+
+# Staff
+/lp group mod permission set pumpkin-unified-core.whois true
+/lp group mod permission set pumpkin-unified-core.weather true
+/lp group mod permission set pumpkin-unified-core.time true
+/lp group mod permission set pumpkin-unified-core.butcher true
+/lp group mod permission set pumpkin-unified-core.extinguish true
+/lp group mod permission set pumpkin-unified-core.enderchest.others true
+```
+
+## Notes
+
+- Most commands work cross-world
+- Time/weather affects all worlds
+- `/back` not fully implemented (placeholder)
+- `/disposal`, `/workbench`, `/anvil` placeholders for UI
+
+## Next
+
+- [Chat Module](/modules/chat)
+- [Configuration](/getting-started/configuration)

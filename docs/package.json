@@ -1,0 +1,23 @@
+{
+  "name": "pumpkin-unified-core-docs",
+  "version": "1.0.0",
+  "description": "Documentation for pumpkin-unified-core plugin",
+  "scripts": {
+    "dev": "fumadocs dev",
+    "build": "fumadocs build",
+    "preview": "fumadocs preview"
+  },
+  "dependencies": {
+    "fumadocs-core": "^14.0.0",
+    "fumadocs-ui": "^14.0.0",
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

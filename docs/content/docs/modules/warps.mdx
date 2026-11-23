@@ -1,0 +1,129 @@
+---
+title: "Warps Module"
+description: "Named location teleports with permissions and cooldowns"
+---
+
+# Warps Module
+
+**Replaces:** EssentialsX Warps  
+**Config Section:** `warps`  
+**Permission Prefix:** `pumpkin-unified-core.warp`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/warp <name>` | `pumpkin-unified-core.warp` | Teleport to warp |
+| `/warp <name> <player>` | `pumpkin-unified-core.warp.others` | Teleport player to warp |
+| `/setwarp <name>` | `pumpkin-unified-core.setwarp` | Create warp at your location |
+| `/delwarp <name>` | `pumpkin-unified-core.delwarp` | Delete warp |
+| `/warps` | `pumpkin-unified-core.warps` | List all warps |
+| `/warpinfo <name>` | `pumpkin-unified-core.warpinfo` | Show warp details |
+
+## Configuration
+
+```toml
+[warps]
+max_warps_per_player = 10      # Max warps per player (0 = unlimited)
+warp_cooldown = 5              # Cooldown in seconds between warps
+per_warp_permissions = true    # Require pumpkin-unified-core.warp.<name> per warp
+```
+
+## Per-Warp Permissions
+
+When `per_warp_permissions = true`, players need:
+- `pumpkin-unified-core.warp.<warpname>` to use specific warp
+- `pumpkin-unified-core.warp.*` for all warps
+
+```bash
+# Grant access to specific warp
+/lp group default permission set pumpkin-unified-core.warp.spawn true
+
+# Grant access to all warps
+/lp group vip permission set pumpkin-unified-core.warp.* true
+```
+
+## Examples
+
+```bash
+# Create a warp at your location
+/setwarp spawn
+# Output: Warp spawn created
+
+# Teleport to warp
+/warp spawn
+# Output: Teleported to warp: spawn
+
+# Teleport another player (admin)
+/warp spawn Steve
+# Output: Teleported Steve to warp: spawn
+
+# List all warps
+/warps
+# Output:
+# - spawn (100, 64, 200)
+# - shop (50, 70, -30)
+# - pvp (0, 100, 0)
+
+# Delete a warp
+/delwarp old_warp
+# Output: Warp old_warp deleted
+
+# View warp info
+/warpinfo spawn
+# Output:
+# Name: spawn
+# World: world
+# Position: 100, 64, 200
+# Creator: Notch
+# Created: 2024-01-15 10:30:00
+```
+
+## Warp Signs
+
+Create physical warp signs:
+
+1. Place a sign
+2. Line 1: `[Warp]`
+3. Line 2: `<warp name>`
+4. Right-click to teleport
+
+Requires `pumpkin-unified-core.warp.sign` permission.
+
+## Storage
+
+Warps stored in `warps` table:
+- `name` - Warp name (unique)
+- `world` - World name
+- `x, y, z` - Coordinates
+- `yaw, pitch` - Rotation
+- `creator` - Creator UUID
+- `created_at` - Timestamp
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.warp true
+/lp group default permission set pumpkin-unified-core.warps true
+
+# VIP - more warps
+/lp group vip permission set pumpkin-unified-core.warp.* true
+
+# Staff - create/delete
+/lp group mod permission set pumpkin-unified-core.setwarp true
+/lp group mod permission set pumpkin-unified-core.delwarp true
+/lp group admin permission set pumpkin-unified-core.warp.others true
+```
+
+## Notes
+
+- Warp names are case-insensitive
+- Cooldown applies per player
+- Cross-world warps supported
+- Warp creator stored for ownership
+
+## Next
+
+- [Homes Module](/modules/homes)
+- [Permissions](/getting-started/permissions)

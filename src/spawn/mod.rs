@@ -31,7 +31,10 @@ impl SpawnModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::SpawnConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::SpawnConfig>,
+    ) -> Self {
         Self {
             storage,
             spawn: Arc::new(RwLock::new(None)),
@@ -41,7 +44,8 @@ impl SpawnModule {
 
     pub async fn load_spawn(&self) -> Result<()> {
         if let Some(data) = self.storage.get("spawn", "main").await? {
-            let spawn_data: crate::storage::SerializedData<SpawnData> = crate::storage::SerializedData::deserialize(&data)?;
+            let spawn_data: crate::storage::SerializedData<SpawnData> =
+                crate::storage::SerializedData::deserialize(&data)?;
             *self.spawn.write().unwrap() = Some(spawn_data.data);
         } else if let Some(loc) = &self.config.spawn_location {
             *self.spawn.write().unwrap() = Some(SpawnData {

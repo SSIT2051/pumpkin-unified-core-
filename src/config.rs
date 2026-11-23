@@ -19,6 +19,13 @@ pub struct Config {
     pub utility: UtilityConfig,
     pub chat: ChatConfig,
     pub events: EventsConfig,
+    pub scheduler: SchedulerConfig,
+    pub holograms: HologramsConfig,
+    pub portals: PortalsConfig,
+    pub stafftools: StaffToolsConfig,
+    pub interactiveblocks: InteractiveBlocksConfig,
+    pub playertracker: PlayerTrackerConfig,
+    pub chattab: ChatTabConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,21 +172,93 @@ pub struct EventsConfig {
     pub anti_build: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SchedulerConfig {
+    pub enabled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HologramsConfig {
+    pub visibility_range: f64,
+    pub max_holograms_per_player: usize,
+    pub update_interval: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PortalsConfig {
+    pub max_portals: usize,
+    pub default_cooldown: u64,
+    pub particle_effect: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StaffToolsConfig {
+    pub enable_vanish: bool,
+    pub enable_social_spy: bool,
+    pub vanish_on_login: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InteractiveBlocksConfig {
+    pub elevator_material: String,
+    pub armor_stand_editable: bool,
+    pub command_signs_editable: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlayerTrackerConfig {
+    pub track_playtime: bool,
+    pub track_ips: bool,
+    pub track_first_join: bool,
+    pub audit_log_enabled: bool,
+    pub audit_log_blocks: bool,
+    pub audit_log_items: bool,
+    pub audit_log_commands: bool,
+    pub max_audit_entries: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatTabConfig {
+    pub format: String,
+    pub tab_header: String,
+    pub tab_footer: String,
+    pub chat_channels: bool,
+    pub hex_colors: bool,
+    pub hover_tooltips: bool,
+}
+
 impl Config {
     pub fn load() -> Self {
-        let config_dir = std::env::var("PUMPKIN_CONFIG_DIR").unwrap_or_else(|_| "config".to_string());
+        let config_dir =
+            std::env::var("PUMPKIN_CONFIG_DIR").unwrap_or_else(|_| "config".to_string());
         let config_path = Path::new(&config_dir).join("pumpkin-unified-core");
 
         let mut builder = ConfigRs::builder()
-            .add_source(File::from(config_path.join("config.default.toml")).format(FileFormat::Toml).required(false))
-            .add_source(File::from(config_path.join("config.default.yml")).format(FileFormat::Yaml).required(false))
-            .add_source(File::from(config_path.join("config.toml")).format(FileFormat::Toml).required(false))
-            .add_source(File::from(config_path.join("config.yml")).format(FileFormat::Yaml).required(false));
+            .add_source(
+                File::from(config_path.join("config.default.toml"))
+                    .format(FileFormat::Toml)
+                    .required(false),
+            )
+            .add_source(
+                File::from(config_path.join("config.default.yml"))
+                    .format(FileFormat::Yaml)
+                    .required(false),
+            )
+            .add_source(
+                File::from(config_path.join("config.toml"))
+                    .format(FileFormat::Toml)
+                    .required(false),
+            )
+            .add_source(
+                File::from(config_path.join("config.yml"))
+                    .format(FileFormat::Yaml)
+                    .required(false),
+            );
 
         builder = builder.add_source(config::Environment::with_prefix("PUC"));
 
         let config_rs = builder.build().expect("Failed to build configuration");
-        
+
         config_rs.try_deserialize().unwrap_or_else(|e| {
             tracing::warn!("Failed to deserialize config, using defaults: {}", e);
             Self::default()
@@ -272,7 +351,8 @@ impl Default for Config {
             chat: ChatConfig {
                 format: "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}".to_string(),
                 broadcast_format: "&4[Broadcast] &r{message}".to_string(),
-                private_message_format: "&8[&bPM&8] &r{from}&r -> &r{to}&r: &f{message}".to_string(),
+                private_message_format: "&8[&bPM&8] &r{from}&r -> &r{to}&r: &f{message}"
+                    .to_string(),
                 chat_radius: None,
                 anti_spam: true,
                 spam_threshold: 5,
@@ -284,6 +364,47 @@ impl Default for Config {
                 keep_inventory: false,
                 anti_build: true,
             },
+scheduler: SchedulerConfig {
+    enabled: true,
+},
+holograms: HologramsConfig {
+    visibility_range: 48.0,
+    max_holograms_per_player: 10,
+    update_interval: 20,
+},
+portals: PortalsConfig {
+    max_portals: 100,
+    default_cooldown: 5,
+    particle_effect: "portal".to_string(),
+},
+stafftools: StaffToolsConfig {
+    enable_vanish: true,
+    enable_social_spy: true,
+    vanish_on_login: false,
+},
+interactiveblocks: InteractiveBlocksConfig {
+    elevator_material: "white_wool".to_string(),
+    armor_stand_editable: true,
+    command_signs_editable: true,
+},
+playertracker: PlayerTrackerConfig {
+    track_playtime: true,
+    track_ips: true,
+    track_first_join: true,
+    audit_log_enabled: true,
+    audit_log_blocks: true,
+    audit_log_items: true,
+    audit_log_commands: true,
+    max_audit_entries: 1000,
+},
+chattab: ChatTabConfig {
+    format: "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}".to_string(),
+    tab_header: "&6&lWelcome to &e{server}&6!&r\n&7Online: &e{online}/{max}".to_string(),
+    tab_footer: "&7Website: &ehttps://example.com&r\n&7Discord: &ediscord.gg/example".to_string(),
+    chat_channels: true,
+    hex_colors: true,
+    hover_tooltips: true,
+},
         }
     }
 }

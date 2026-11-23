@@ -62,7 +62,10 @@ impl PermissionsModule {
         }
     }
 
-    pub fn with_config(storage: Arc<StorageBackend>, config: Arc<crate::config::PermissionsConfig>) -> Self {
+    pub fn with_config(
+        storage: Arc<StorageBackend>,
+        config: Arc<crate::config::PermissionsConfig>,
+    ) -> Self {
         Self {
             storage,
             users: Arc::new(DashMap::new()),
@@ -75,27 +78,30 @@ impl PermissionsModule {
     pub async fn load_data(&self) -> Result<()> {
         for key in self.storage.keys("users", "%").await? {
             if let Some(data) = self.storage.get("users", &key).await? {
-                let entry: crate::storage::SerializedData<UserData> = crate::storage::SerializedData::deserialize(&data)?;
+                let entry: crate::storage::SerializedData<UserData> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 self.users.insert(entry.data.uuid, entry.data);
             }
         }
         for key in self.storage.keys("groups", "%").await? {
             if let Some(data) = self.storage.get("groups", &key).await? {
-                let entry: crate::storage::SerializedData<GroupData> = crate::storage::SerializedData::deserialize(&data)?;
+                let entry: crate::storage::SerializedData<GroupData> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 self.groups.insert(entry.data.name.clone(), entry.data);
             }
         }
         for key in self.storage.keys("tracks", "%").await? {
             if let Some(data) = self.storage.get("tracks", &key).await? {
-                let entry: crate::storage::SerializedData<TrackData> = crate::storage::SerializedData::deserialize(&data)?;
+                let entry: crate::storage::SerializedData<TrackData> =
+                    crate::storage::SerializedData::deserialize(&data)?;
                 self.tracks.insert(entry.data.name.clone(), entry.data);
             }
         }
-        
+
         if !self.groups.contains_key(&self.config.default_group) {
             self.create_group(self.config.default_group.clone()).await?;
         }
-        
+
         Ok(())
     }
 
@@ -122,14 +128,19 @@ impl PermissionsModule {
         self.groups.get(name).map(|g| g.clone())
     }
 
-    pub fn has_permission(&self, uuid: Uuid, permission: &str, contexts: &HashMap<String, String>) -> bool {
+    pub fn has_permission(
+        &self,
+        uuid: Uuid,
+        permission: &str,
+        contexts: &HashMap<String, String>,
+    ) -> bool {
         let user = match self.get_user(uuid) {
             Some(u) => u,
             None => return false,
         };
-        
+
         let mut all_perms = user.permissions.clone();
-        
+
         for group_name in &user.groups {
             if let Some(group) = self.get_group(group_name) {
                 all_perms.extend(group.permissions);
@@ -140,7 +151,7 @@ impl PermissionsModule {
                 }
             }
         }
-        
+
         for perm in all_perms {
             if perm.node == permission || self.wildcard_match(&perm.node, permission) {
                 if !perm.value {
@@ -169,7 +180,11 @@ impl PermissionsModule {
         }
     }
 
-    fn contexts_match(&self, perm_contexts: &HashMap<String, String>, check_contexts: &HashMap<String, String>) -> bool {
+    fn contexts_match(
+        &self,
+        perm_contexts: &HashMap<String, String>,
+        check_contexts: &HashMap<String, String>,
+    ) -> bool {
         for (key, value) in perm_contexts {
             if let Some(check_value) = check_contexts.get(key) {
                 if check_value != value {
@@ -182,7 +197,13 @@ impl PermissionsModule {
         true
     }
 
-    pub async fn set_user_permission(&self, uuid: Uuid, node: String, value: bool, contexts: HashMap<String, String>) -> Result<()> {
+    pub async fn set_user_permission(
+        &self,
+        uuid: Uuid,
+        node: String,
+        value: bool,
+        contexts: HashMap<String, String>,
+    ) -> Result<()> {
         let mut user = self.get_user(uuid).unwrap_or_else(|| UserData {
             uuid,
             name: String::new(),
@@ -190,8 +211,9 @@ impl PermissionsModule {
             groups: vec![],
             metadata: HashMap::new(),
         });
-        
-        user.permissions.retain(|p| p.node != node || p.context != contexts);
+
+        user.permissions
+            .retain(|p| p.node != node || p.context != contexts);
         user.permissions.push(PermissionNode {
             node,
             value,
@@ -200,7 +222,7 @@ impl PermissionsModule {
             expiry: None,
             context: contexts,
         });
-        
+
         let data = crate::storage::SerializedData::new(user.clone()).serialize()?;
         self.storage.set("users", &uuid.to_string(), &data).await?;
         self.users.insert(uuid, user);
@@ -215,7 +237,7 @@ impl PermissionsModule {
             groups: vec![],
             metadata: HashMap::new(),
         });
-        
+
         if !user.groups.contains(&group) {
             user.groups.push(group);
             let data = crate::storage::SerializedData::new(user.clone()).serialize()?;

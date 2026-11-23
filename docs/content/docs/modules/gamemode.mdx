@@ -1,0 +1,95 @@
+---
+title: "Gamemode Module"
+description: "Quick gamemode switching commands"
+---
+
+# Gamemode Module
+
+**Replaces:** EssentialsX Gamemode  
+**Config Section:** `gamemode`  
+**Permission Prefix:** `pumpkin-unified-core.gamemode`
+
+## Commands
+
+| Command | Aliases | Permission | Description |
+|---------|---------|------------|-------------|
+| `/gamemode <mode> [player]` | `/gm` | `pumpkin-unified-core.gamemode` | Change gamemode |
+| `/gmc [player]` | - | `pumpkin-unified-core.gamemode.creative` | Creative mode |
+| `/gms [player]` | - | `pumpkin-unified-core.gamemode.survival` | Survival mode |
+| `/gma [player]` | - | `pumpkin-unified-core.gamemode.adventure` | Adventure mode |
+| `/gmsp [player]` | - | `pumpkin-unified-core.gamemode.spectator` | Spectator mode |
+
+## Gamemode Values
+
+| Mode | Aliases | Numeric |
+|------|---------|---------|
+| Survival | `survival`, `s`, `0` | 0 |
+| Creative | `creative`, `c`, `1` | 1 |
+| Adventure | `adventure`, `a`, `2` | 2 |
+| Spectator | `spectator`, `sp`, `3` | 3 |
+
+## Configuration
+
+```toml
+[gamemode]
+default = "survival"    # Default gamemode for new players
+```
+
+## Examples
+
+```bash
+# Change your gamemode to creative
+/gamemode creative
+# or
+/gmc
+
+# Change another player's gamemode
+/gamemode survival Steve
+/gms Steve
+
+# Use numeric values
+/gamemode 1
+/gm 0
+
+# Adventure mode
+/gma
+
+# Spectator mode
+/gmsp
+```
+
+## Default Gamemode
+
+Set default for new players in config:
+```toml
+[gamemode]
+default = "survival"  # or creative, adventure, spectator
+```
+
+Applied on first join if no other plugin sets it.
+
+## Permissions Setup
+
+```bash
+# Creative-only access
+/lp group builder permission set pumpkin-unified-core.gamemode.creative true
+
+# Survival-only (default)
+/lp group default permission set pumpkin-unified-core.gamemode.survival true
+
+# Full gamemode access
+/lp group mod permission set pumpkin-unified-core.gamemode true
+/lp group mod permission set pumpkin-unified-core.gamemode.* true
+```
+
+## Notes
+
+- Changes apply immediately
+- Inventory preserved in survival/creative
+- Adventure mode prevents block breaking
+- Spectator mode: noclip, invisible, no interaction
+
+## Next
+
+- [Permissions Module](/modules/permissions)
+- [Configuration](/getting-started/configuration)
