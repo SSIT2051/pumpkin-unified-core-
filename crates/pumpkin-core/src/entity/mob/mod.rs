@@ -1581,6 +1581,11 @@ pub trait Mob: EntityBase + Send + Sync {
         0.0
     }
 
+    /// Maximum fall distance before taking damage. Default 3.0.
+    fn get_max_fall_distance(&self) -> f32 {
+        3.0
+    }
+
     fn can_attack(&self, target: &dyn EntityBase) -> bool {
         self.can_attack_base(target)
     }

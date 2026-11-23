@@ -11,6 +11,7 @@ use pumpkin_data::{
 };
 use pumpkin_nbt::compound::NbtCompound;
 use pumpkin_protocol::codec::var_int::VarInt;
+use rand::Rng;
 
 use crate::entity::ai::behavior::hunting::{self, Hunt};
 use crate::entity::{
@@ -19,7 +20,7 @@ use crate::entity::{
     ai::goal::{
         creeper_ignite::CreeperIgniteGoal, look_around::RandomLookAroundGoal,
         look_at_entity::LookAtEntityGoal, melee_attack::MeleeAttackGoal, revenge::RevengeGoal,
-        swim::SwimGoal, wander_around::WanderAroundGoal,
+        swim::SwimGoal, water_avoiding_random_stroll::WaterAvoidingRandomStrollGoal,
     },
     ai::target_match::TargetMatch,
     mob::{Mob, MobEntity},
@@ -76,8 +77,7 @@ impl CreeperEntity {
                 Box::new(CreeperIgniteGoal::new(Arc::downgrade(&mob_arc))),
             );
             fleeing::apply(goal_selector, CREEPER_FLEES);
-            goal_selector.add_goal(4, Box::new(MeleeAttackGoal::new(1.0, false)));
-            goal_selector.add_goal(5, Box::new(WanderAroundGoal::new(0.8)));
+            goal_selector.add_goal(5, Box::new(WaterAvoidingRandomStrollGoal::new(0.8)));
 
             goal_selector.add_goal(
                 6,
@@ -94,10 +94,11 @@ impl CreeperEntity {
 
     pub fn set_fuse_speed(&self, speed: i32) {
         self.fuse_speed.store(speed, Ordering::Relaxed);
-        self.mob_entity
-            .living_entity
-            .entity
-            .set_synced_data(pumpkin_data::tracked_data::creeper::FUSE_ID, VarInt(speed));
+        let entity = &self.mob_entity.living_entity.entity;
+        entity.set_synced_data(pumpkin_data::tracked_data::creeper::FUSE_ID, VarInt(speed));
+        if let Some(meta) = self.mob_metadata() {
+            entity.send_bedrock_actor_data(&meta.to_bedrock_actor_data());
+        }
     }
 
     pub fn explode(&self) {
@@ -108,20 +109,62 @@ impl CreeperEntity {
         } else {
             1.0
         };
+        let world = entity.world.load();
+        let pos = entity.pos.load();
+        let charged = self.charged.load(Ordering::Relaxed);
+
+        // Spawn lingering cloud for charged creeper
+        if charged {
+            let area_effect_cloud = crate::entity::area_effect_cloud::AreaEffectCloudEntity::new(
+                &world,
+                pos,
+                Some(entity),
+                2.5,  // radius
+                300,  // duration
+                10,   // wait_time
+            );
+            world.add_entity(Arc::new(area_effect_cloud));
+        }
+
         self.mob_entity
             .living_entity
             .dead
             .store(true, Ordering::Relaxed);
-        let world = entity.world.load();
-        let pos = entity.pos.load();
         world.explode_from(
             self,
             pos,
             radius * multiplier,
             crate::world::ExplosionInteraction::Mob,
         );
-        // TODO: spawn area effect cloud with potion effects
         entity.remove();
+    }
+
+    /// Play creeper hurt sound
+    pub fn play_hurt_sound(&self) {
+        let entity = &self.mob_entity.living_entity.entity;
+        let world = entity.world.load();
+        let pos = entity.pos.load();
+        world.play_sound_fine(
+            Sound::EntityCreeperHurt,
+            SoundCategory::Hostile,
+            &pos,
+            1.0,
+            1.0,
+        );
+    }
+
+    /// Play creeper death sound
+    pub fn play_death_sound(&self) {
+        let entity = &self.mob_entity.living_entity.entity;
+        let world = entity.world.load();
+        let pos = entity.pos.load();
+        world.play_sound_fine(
+            Sound::EntityCreeperDeath,
+            SoundCategory::Hostile,
+            &pos,
+            1.0,
+            1.0,
+        );
     }
 }
 
@@ -136,8 +179,8 @@ impl Mob for CreeperEntity {
             self.mob_entity
                 .living_entity
                 .cause_fall_damage(caller, fall_distance, damage_modifier);
-        let max_swell = self.fuse_time.load(Ordering::Relaxed) - 5;
-        let swell = self.current_fuse_time.load(Ordering::Relaxed) + (fall_distance * 1.5) as i32;
+        let max_swell = self.fuse_time.load(Ordering::Relaxed).saturating_sub(5);
+        let swell = self.current_fuse_time.load(Ordering::Relaxed).saturating_add((fall_distance * 1.5) as i32);
         self.current_fuse_time
             .store(swell.min(max_swell), Ordering::Relaxed);
         damaged
@@ -193,11 +236,7 @@ impl Mob for CreeperEntity {
         caller: &dyn EntityBase,
         lightning: &crate::entity::lightning::LightningBoltEntity,
     ) {
-        self.charged.store(true, Ordering::Relaxed);
-        self.mob_entity
-            .living_entity
-            .entity
-            .set_synced_data(pumpkin_data::tracked_data::creeper::CHARGED, true);
+        self.set_charged(true);
         self.mob_entity
             .living_entity
             .on_lightning_strike(caller, lightning);
@@ -223,12 +262,18 @@ impl Mob for CreeperEntity {
 
         if fuse_speed > 0 && current == 0 {
             let world = entity.world.load();
+            let pos = entity.pos.load();
             world.play_sound_fine(
                 Sound::EntityCreeperPrimed,
                 SoundCategory::Hostile,
-                &entity.pos.load(),
+                &pos,
                 1.0,
                 0.5,
+            );
+            world.play_game_event(
+                crate::world::GameEvent::PrimeFuse,
+                pos.into(),
+                Some(entity),
             );
         }
 
@@ -243,32 +288,62 @@ impl Mob for CreeperEntity {
     }
 
     fn mob_interact(&self, player: &Arc<Player>, item_stack: &mut ItemStack) -> bool {
-        if item_stack.item.id != Item::FLINT_AND_STEEL.id {
-            return self
-                .mob_entity
-                .mob_interact(player, item_stack, self.can_be_leashed());
-        }
-
         let entity = &self.mob_entity.living_entity.entity;
         let world = entity.world.load();
         let pos = entity.pos.load();
 
-        world.play_sound_fine(
-            Sound::ItemFlintandsteelUse,
-            SoundCategory::Hostile,
-            &pos,
-            1.0,
-            rand::random::<f32>() * 0.4 + 0.8,
-        );
+        if item_stack.item.id == Item::FLINT_AND_STEEL.id {
+            world.play_sound_fine(
+                Sound::ItemFlintandsteelUse,
+                SoundCategory::Hostile,
+                &pos,
+                1.0,
+                rand::random::<f32>() * 0.4 + 0.8,
+            );
 
-        self.ignited.store(true, Ordering::Relaxed);
-        entity.set_synced_data(pumpkin_data::tracked_data::creeper::IS_IGNITED, true);
+            self.ignited.store(true, Ordering::Relaxed);
+            entity.set_synced_data(pumpkin_data::tracked_data::creeper::IS_IGNITED, true);
 
-        if player.gamemode.load() != pumpkin_util::GameMode::Creative {
-            let _ = item_stack.damage_item(1);
+            if player.gamemode.load() != pumpkin_util::GameMode::Creative {
+                let _ = item_stack.damage_item(1);
+            }
+            return true;
         }
 
+        if item_stack.item.id == Item::FIRE_CHARGE.id {
+            world.play_sound_fine(
+                Sound::ItemFirechargeUse,
+                SoundCategory::Hostile,
+                &pos,
+                1.0,
+                rand::random::<f32>() * 0.4 + 0.8,
+            );
+
+            self.ignited.store(true, Ordering::Relaxed);
+            entity.set_synced_data(pumpkin_data::tracked_data::creeper::IS_IGNITED, true);
+
+            if player.gamemode.load() != pumpkin_util::GameMode::Creative {
+                let _ = item_stack.damage_item(1);
+            }
+            return true;
+        }
+
+        self.mob_entity
+            .mob_interact(player, item_stack, self.can_be_leashed())
+    }
+
+    fn can_attack(&self, entity: &Entity) -> bool {
+        // Creepers don't attack goats
+        if entity.get_type() == EntityType::GOAT {
+            return false;
+        }
         true
+    }
+
+    fn get_max_fall_distance(&self) -> f32 {
+        // Creeper's max fall distance scales with health
+        let health = self.mob_entity.living_entity.get_health();
+        3.0 + (health * 0.5)
     }
 }
 
@@ -313,5 +388,23 @@ impl CreeperEntity {
 
     pub fn set_explosion_radius(&self, radius: i32) {
         self.explosion_radius.store(radius, Ordering::Relaxed);
+    }
+
+    pub fn get_swelling(&self, partial_tick: f32) -> f32 {
+        let current = self.current_fuse_time.load(Ordering::Relaxed) as f32;
+        let last = self.last_fuse_time.load(Ordering::Relaxed) as f32;
+        let fuse_time = self.fuse_time.load(Ordering::Relaxed) as f32;
+
+        if fuse_time <= 0.0 {
+            return 1.0;
+        }
+
+        let mut swelling = (last + (current - last) * partial_tick) / fuse_time;
+        if swelling < 0.0 {
+            swelling = 0.0;
+        } else if swelling > 1.0 {
+            swelling = 1.0;
+        }
+        swelling
     }
 }
