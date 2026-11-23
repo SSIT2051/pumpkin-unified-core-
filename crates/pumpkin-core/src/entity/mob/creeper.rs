@@ -96,6 +96,9 @@ impl CreeperEntity {
         self.fuse_speed.store(speed, Ordering::Relaxed);
         let entity = &self.mob_entity.living_entity.entity;
         entity.set_synced_data(pumpkin_data::tracked_data::creeper::FUSE_ID, VarInt(speed));
+        if let Some(meta) = self.mob_metadata() {
+            entity.send_bedrock_actor_data(&meta.to_bedrock_actor_data());
+        }
     }
 
     pub fn explode(&self) {
@@ -314,7 +317,7 @@ impl Mob for CreeperEntity {
                 &pos,
                 1.0,
                 rand::random::<f32>() * 0.4 + 0.8,
-            )
+            );
 
             self.ignited.store(true, Ordering::Relaxed);
             entity.set_synced_data(pumpkin_data::tracked_data::creeper::IS_IGNITED, true);
@@ -353,6 +356,9 @@ impl CreeperEntity {
         self.charged.store(charged, Ordering::Relaxed);
         let entity = &self.mob_entity.living_entity.entity;
         entity.set_synced_data(pumpkin_data::tracked_data::creeper::CHARGED, charged);
+        if let Some(meta) = self.mob_metadata() {
+            entity.send_bedrock_actor_data(&meta.to_bedrock_actor_data());
+        }
     }
 
     pub fn is_ignited(&self) -> bool {
@@ -363,6 +369,9 @@ impl CreeperEntity {
         self.ignited.store(ignited, Ordering::Relaxed);
         let entity = &self.mob_entity.living_entity.entity;
         entity.set_synced_data(pumpkin_data::tracked_data::creeper::IS_IGNITED, ignited);
+        if let Some(meta) = self.mob_metadata() {
+            entity.send_bedrock_actor_data(&meta.to_bedrock_actor_data());
+        }
     }
 
     pub fn get_fuse(&self) -> i32 {
@@ -370,7 +379,7 @@ impl CreeperEntity {
     }
 
     pub fn set_fuse(&self, fuse: i32) {
-        self.fuse_time.store(fuse, Ordering::Relaxed)
+        self.fuse_time.store(fuse, Ordering::Relaxed);
     }
 
     pub fn get_explosion_radius(&self) -> i32 {
@@ -378,7 +387,7 @@ impl CreeperEntity {
     }
 
     pub fn set_explosion_radius(&self, radius: i32) {
-        self.explosion_radius.store(radius, Ordering::Relaxed)
+        self.explosion_radius.store(radius, Ordering::Relaxed);
     }
 
     pub fn get_swelling(&self, partial_tick: f32) -> f32 {

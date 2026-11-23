@@ -80,16 +80,7 @@ impl Goal for CreeperIgniteGoal {
 
         if dist_sq > 49.0 || !mob.has_line_of_sight(target.get_entity()) {
             creeper.set_fuse_speed(-1);
-        } else if creeper.fuse_speed.load(Ordering::Relaxed) <= 0 {
-            // Swell starting - emit PRIME_FUSE game event
-            let entity = &creeper.mob_entity.living_entity.entity;
-            let world = entity.world.load();
-            let pos = entity.pos.load();
-            world.play_game_event(
-                crate::world::GameEvent::PrimeFuse,
-                pos.into(),
-                Some(entity),
-            );
+        } else {
             creeper.set_fuse_speed(1);
         }
     }
