@@ -1,0 +1,182 @@
+---
+title: "Placeholders"
+description: "Placeholder system for dynamic text replacement"
+---
+
+# Placeholders
+
+PUC provides a comprehensive placeholder system used across modules.
+
+## Global Placeholders
+
+Available in all modules:
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{player}` | Player name | `Notch` |
+| `{displayname}` | Display name (nickname) | `Notch` |
+| `{group}` | Primary group | `admin` |
+| `{prefix}` | Group prefix | `[Admin] ` |
+| `{server}` | Server name | `My Server` |
+| `{online}` | Online players | `25` |
+| `{max}` | Max players | `100` |
+| `{time}` | Current time | `14:30:00` |
+| `{date}` | Current date | `2024-01-15` |
+| `{tps}` | Server TPS | `20.0` |
+| `{uuid}` | Player UUID | `xxxxxxxx-xxxx...` |
+| `{world}` | Current world | `world` |
+| `{x}` `{y}` `{z}` | Coordinates | `100`, `64`, `200` |
+
+## Module-Specific Placeholders
+
+### Economy
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{balance}` | Player's balance |
+| `{symbol}` | Currency symbol |
+| `{amount}` | Formatted amount |
+
+### Warps/Homes
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{warp}` | Warp name |
+| `{home}` | Home name |
+
+### Chat
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{channel}` | Channel display name |
+| `{from}` | Sender name (PM) |
+| `{to}` | Recipient name (PM) |
+
+### Scheduler
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{server}` | Server name |
+| `{time}` | Current time |
+| `{date}` | Current date |
+| `{online_players}` | Online count |
+
+### Player Tracker
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{playtime}` | Formatted playtime |
+| `{first_join}` | First join date |
+| `{last_seen}` | Last seen date |
+| `{ip}` | Current IP |
+
+## Usage in Config
+
+```toml
+# Chat format
+format = "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}"
+
+# Tab header
+tab_header = "&6Welcome to {server}! Online: {online}/{max}"
+
+# Broadcast
+broadcast_format = "&4[Broadcast] &r{message}"
+
+# Private message
+private_message_format = "&8[PM] {from} -> {to}: {message}"
+
+# Hologram lines (support placeholders)
+lines = [
+  "&6Welcome {player}!",
+  "&7Online: {online}/{max}",
+  "&7Time: {time}"
+]
+```
+
+## Usage in Commands
+
+```bash
+# Scheduler with placeholders
+/scheduler create announce "0 * * * *" "broadcast Server: {server} | Online: {online_players} | Time: {time}"
+
+# Command sign with placeholders
+/commandsign create welcome "say Welcome {player} to {server}!"
+```
+
+## Custom Placeholders
+
+Modules can register custom placeholders:
+
+```rust
+// In module implementation
+pub fn register_placeholders(&self, placeholders: &mut HashMap<String, String>) {
+    placeholders.insert("mycustom".to_string(), "custom value".to_string());
+}
+```
+
+## Placeholder Processing
+
+```rust
+use crate::utils::text::{replace_placeholders, process_hex_colors};
+
+let mut placeholders = HashMap::new();
+placeholders.insert("player".to_string(), "Notch".to_string());
+placeholders.insert("server".to_string(), "My Server".to_string());
+
+let text = "Welcome {player} to {server}!";
+let processed = replace_placeholders(text, &placeholders);
+// Result: "Welcome Notch to My Server!"
+
+// Then process hex colors
+let final_text = process_hex_colors(&processed);
+// Handles #RRGGBB format
+```
+
+## Hex Color Support
+
+When `hex_colors = true` in chat config:
+
+```
+Input:  "Hello #FF0000Red #00FF00Green #0000FFBlue text"
+Output: "Hello Red Green Blue text" (with actual colors)
+```
+
+Format: `#RRGGBB` where RR, GG, BB are hexadecimal.
+
+## Conditional Placeholders
+
+Not natively supported, but can be implemented in modules:
+
+```rust
+fn process_conditional(text: &str, player: &Player) -> String {
+    let mut result = text.to_string();
+    
+    // Example: {if_has_perm:perm:yes:no}
+    if let Some(caps) = regex::Regex::new(r"\{if_has_perm:([^:]+):([^:]+):([^}]+)\}")
+        .captures(text) {
+        let perm = &caps[1];
+        let yes = &caps[2];
+        let no = &caps[3];
+        
+        if player.has_permission(perm) {
+            result = result.replace(&caps[0], yes);
+        } else {
+            result = result.replace(&caps[0], no);
+        }
+    }
+    
+    result
+}
+```
+
+## Performance
+
+- Placeholders resolved at message send time
+- Cache frequently used values
+- Avoid complex computations in hot paths
+- Hex color parsing cached per message
+
+## Next
+
+- [Custom Commands](/advanced/custom-commands)
+- [Configuration](/getting-started/configuration)

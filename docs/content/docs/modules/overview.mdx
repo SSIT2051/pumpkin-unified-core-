@@ -1,0 +1,94 @@
+---
+title: "Modules Overview"
+description: "Overview of all modules in Pumpkin Unified Core"
+---
+
+# Modules Overview
+
+PUC combines 17 modules into one plugin. Each module can be enabled/disabled via configuration.
+
+## Module Categories
+
+### Core Essentials (8 modules)
+| Module | Command Prefix | Config Section | Description |
+|--------|---------------|----------------|-------------|
+| [Economy](/modules/economy) | `/balance`, `/pay`, `/eco` | `economy` | Currency system with admin tools |
+| [Warps](/modules/warps) | `/warp`, `/setwarp` | `warps` | Named location teleports |
+| [Homes](/modules/homes) | `/home`, `/sethome` | `homes` | Personal teleport points |
+| [TPA](/modules/tpa) | `/tpa`, `/tpahere` | `tpa` | Teleport requests |
+| [Kits](/modules/kits) | `/kit`, `/kits` | `kits` | Item kits with cooldowns |
+| [Moderation](/modules/moderation) | `/kick`, `/ban`, `/mute` | `moderation` | Player management tools |
+| [Gamemode](/modules/gamemode) | `/gamemode`, `/gmc` | `gamemode` | Quick gamemode switching |
+| [Permissions](/modules/permissions) | `/lp` | `permissions` | Full LuckPerms implementation |
+
+### Utility & Chat (4 modules)
+| Module | Command Prefix | Config Section | Description |
+|--------|---------------|----------------|-------------|
+| [Spawn](/modules/spawn) | `/spawn`, `/setspawn` | `spawn` | Spawn management |
+| [Utility](/modules/utility) | `/afk`, `/speed`, `/repair` | `utility` | 20+ utility commands |
+| [Chat](/modules/chat) | `/msg`, `/broadcast` | `chat` | Private messages, mail, broadcasts |
+| [Events](/modules/events) | N/A | `events` | Join/leave, death messages, anti-build |
+
+### Extended Features (5 modules)
+| Module | Command Prefix | Config Section | Description |
+|--------|---------------|----------------|-------------|
+| [Holograms](/modules/holograms) | `/hologram` | `holograms` | Floating text displays |
+| [Portals](/modules/portals) | `/portal` | `portals` | Custom teleport/command portals |
+| [Staff Tools](/modules/stafftools) | `/vanish`, `/invsee` | `stafftools` | Admin tools: vanish, invsee, warnings |
+| [Interactive Blocks](/modules/interactiveblocks) | `/elevator`, `/armorstand` | `interactiveblocks` | Elevators, armor stands, command signs |
+| [Scheduler](/modules/scheduler) | `/scheduler` | `scheduler` | Cron-based automated tasks |
+
+### Analytics (2 modules)
+| Module | Command Prefix | Config Section | Description |
+|--------|---------------|----------------|-------------|
+| [Player Tracker](/modules/playertracker) | `/playtime`, `/seen`, `/auditlog` | `playertracker` | Playtime, IP history, audit logging |
+| [Chat & Tab](/modules/chattab) | `/channel`, `/chattab` | `chattab` | Chat channels, tab formatting, hex colors |
+
+## Enabling/Disabling Modules
+
+Disable modules by setting limits to 0 in config:
+
+```toml
+# Disable holograms
+[holograms]
+max_holograms_per_player = 0
+
+# Disable portals
+[portals]
+max_portals = 0
+
+# Disable scheduler
+[scheduler]
+enabled = false
+```
+
+Or remove permissions:
+```bash
+# Remove all hologram permissions from default group
+/lp group default permission unset pumpkin-unified-core.hologram.*
+```
+
+## Module Dependencies
+
+| Module | Depends On |
+|--------|------------|
+| Staff Tools | Moderation (for mute checks) |
+| Events | Economy, Warps, Homes, Kits, Moderation, Chat |
+| Player Tracker | None (standalone) |
+| Chat & Tab | Chat (extends formatting) |
+| All | Storage, Permissions |
+
+## Performance Notes
+
+- Each module loads on-demand
+- Storage queries are cached with DashMap
+- Async operations use Tokio
+- Holograms/Portals use minimal entity tracking
+- Scheduler uses efficient cron parsing
+
+## Next Steps
+
+Explore individual modules:
+- [Core Essentials](/modules/economy)
+- [Extended Features](/modules/holograms)
+- [Analytics](/modules/playertracker)

@@ -1,0 +1,151 @@
+---
+title: "Holograms Module (HoloManager)"
+description: "Floating text displays with multi-line support and placeholders"
+---
+
+# Holograms Module
+
+**Replaces:** DecentHolograms  
+**Config Section:** `holograms`  
+**Permission Prefix:** `pumpkin-unified-core.hologram`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/hologram create <name> <text>` | `pumpkin-unified-core.hologram.create` | Create hologram |
+| `/hologram remove <name>` | `pumpkin-unified-core.hologram.remove` | Remove hologram |
+| `/hologram list` | `pumpkin-unified-core.hologram.list` | List all holograms |
+| `/hologram teleport <name>` | `pumpkin-unified-core.hologram.teleport` | Teleport to hologram |
+| `/hologram edit <name> <text>` | `pumpkin-unified-core.hologram.edit` | Edit hologram text |
+| `/hologram move <name> <x> <y> <z>` | `pumpkin-unified-core.hologram.move` | Move hologram |
+| `/hologram copy <name> <newname>` | `pumpkin-unified-core.hologram.copy` | Copy hologram |
+| `/hologram readtext <name> <file>` | `pumpkin-unified-core.hologram.readtext` | Load text from file |
+
+## Configuration
+
+```toml
+[holograms]
+visibility_range = 48.0          # Blocks until hologram disappears
+max_holograms_per_player = 10    # Max holograms per player (0 = unlimited)
+update_interval = 20             # Update interval in ticks (1s = 20 ticks)
+```
+
+## Features
+
+- **Multi-line holograms** - Each line separate
+- **Color codes** - Full `&` code support (`&a`, `&c`, `&#RRGGBB`)
+- **Placeholders** - `{player}`, `{online}`, `{server}`, `{time}`, `{date}`
+- **Visibility range** - Auto-hide at distance
+- **Armor stand based** - Uses invisible armor stands
+- **Persistent** - Survives restarts
+
+## Examples
+
+```bash
+# Create single-line hologram
+/hologram create welcome "Welcome to the server!"
+# Output: Hologram welcome created
+
+# Create multi-line (use \n in file or multiple edits)
+/hologram create rules "&6&lRules\n&c1. No cheating\n&c2. Be respectful"
+
+# Edit hologram
+/hologram edit welcome "Welcome to &aMy Server&r!"
+# Output: Hologram welcome edited
+
+# Move hologram
+/hologram move welcome 100 64 200
+# Output: Hologram welcome moved
+
+# Teleport to hologram
+/hologram teleport welcome
+# Output: Teleported to hologram: welcome
+
+# Copy hologram
+/hologram copy welcome welcome2
+# Output: Hologram welcome copied to welcome2
+
+# Load from file
+/hologram readtext welcome /path/to/text.txt
+# Output: Hologram welcome text loaded from /path/to/text.txt
+
+# List all holograms
+/hologram list
+# Output:
+# - welcome (100, 64, 200)
+# - rules (50, 70, -30)
+
+# Remove hologram
+/hologram remove welcome
+# Output: Hologram welcome removed
+```
+
+## Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{player}` | Viewing player name |
+| `{online}` | Online player count |
+| `{max}` | Max players |
+| `{server}` | Server name |
+| `{time}` | Current time (HH:MM:SS) |
+| `{date}` | Current date (YYYY-MM-DD) |
+| `{tps}` | Server TPS |
+
+## File Format
+
+Text files for `/hologram readtext`:
+```
+Line 1
+Line 2
+Line 3
+```
+
+Each line becomes a separate hologram line.
+
+## Visibility
+
+- Holograms use armor stands with custom names
+- Visible up to `visibility_range` blocks
+- Automatically hidden beyond range
+- Updated every `update_interval` ticks
+
+## Storage
+
+Holograms stored in `holograms` table:
+- `name` - Unique identifier
+- `world` - World name
+- `x, y, z` - Position
+- `lines` - JSON array of text lines
+- `visibility_range` - Override default
+- `page_lines` - Lines per page (scrolling)
+
+## Permissions Setup
+
+```bash
+# Staff - manage holograms
+/lp group mod permission set pumpkin-unified-core.hologram.create true
+/lp group mod permission set pumpkin-unified-core.hologram.remove true
+/lp group mod permission set pumpkin-unified-core.hologram.edit true
+/lp group mod permission set pumpkin-unified-core.hologram.move true
+
+# Builders - copy/teleport
+/lp group builder permission set pumpkin-unified-core.hologram.copy true
+/lp group builder permission set pumpkin-unified-core.hologram.teleport true
+
+# Default - view list
+/lp group default permission set pumpkin-unified-core.hologram.list true
+```
+
+## Notes
+
+- Max 10 holograms per player by default
+- Lines support full formatting
+- Placeholders update in real-time
+- File reading supports UTF-8
+
+## Next
+
+- [Portals Module](/modules/portals)
+- [Configuration](/getting-started/configuration)

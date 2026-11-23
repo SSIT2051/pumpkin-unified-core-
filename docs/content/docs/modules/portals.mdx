@@ -1,0 +1,180 @@
+---
+title: "Portals Module (PortalBuilder)"
+description: "Custom portals with commands, teleports, and particle effects"
+---
+
+# Portals Module
+
+**Replaces:** AdvancedPortals  
+**Config Section:** `portals`  
+**Permission Prefix:** `pumpkin-unified-core.portal`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/portal create <name>` | `pumpkin-unified-core.portal.create` | Create portal at location |
+| `/portal remove <name>` | `pumpkin-unified-core.portal.remove` | Remove portal |
+| `/portal list` | `pumpkin-unified-core.portal.list` | List all portals |
+| `/portal setdestination <name> <world> <x> <y> <z> <yaw> <pitch>` | `pumpkin-unified-core.portal.setdestination` | Set teleport destination |
+| `/portal setcommand <name> <command>` | `pumpkin-unified-core.portal.setcommand` | Set command to execute |
+| `/portal setparticle <name> <particle>` | `pumpkin-unified-core.portal.setparticle` | Set particle effect |
+| `/portal setmaterial <name> <material>` | `pumpkin-unified-core.portal.setmaterial` | Set portal frame material |
+| `/portal setcooldown <name> <seconds>` | `pumpkin-unified-core.portal.setcooldown` | Set cooldown |
+| `/portal setpermission <name> <permission>` | `pumpkin-unified-core.portal.setpermission` | Set required permission |
+| `/portal teleport <name>` | `pumpkin-unified-core.portal.teleport` | Teleport to portal |
+
+## Configuration
+
+```toml
+[portals]
+max_portals = 100              # Max portals (0 = unlimited)
+default_cooldown = 5           # Default cooldown in seconds
+particle_effect = "portal"     # Default particle
+```
+
+## Portal Types
+
+### Teleport Portals
+Teleport players to a destination:
+```bash
+/portal create hub
+/portal setdestination hub world 100 64 200 0 0
+# Player walks into portal -> teleported to world 100,64,200
+```
+
+### Command Portals
+Execute commands on enter:
+```bash
+/portal create shop
+/portal setcommand shop "warp shop"
+# Player walks into portal -> executes /warp shop
+```
+
+### Hybrid Portals
+Both teleport and command:
+```bash
+/portal create pvp
+/portal setdestination pvp world_pvp 0 100 0 0 0
+/portal setcommand pvp "kit pvp"
+# Teleports AND gives PvP kit
+```
+
+## Portal Region
+
+Portals are cuboid regions defined by two corners:
+- Created at player location (2x3x2 default)
+- Use `/portal move` to adjust (not implemented, recreate)
+- Frame material optional for visual
+
+## Particle Effects
+
+Common particles:
+- `portal` - Nether portal particles
+- `end_rod` - End rod particles
+- `enchant` - Enchantment table particles
+- `heart` - Heart particles
+- `note` - Note particles
+- `villager_happy` - Green sparkles
+
+Full list: [Minecraft Particles](https://minecraft.wiki/w/Particle)
+
+## Examples
+
+```bash
+# Create basic teleport portal
+/portal create spawn
+/portal setdestination spawn world 100 64 200 0 0
+/portal setparticle spawn portal
+# Output: Portal spawn created
+
+# Create command portal
+/portal create shop
+/portal setcommand shop "warp shop"
+/portal setparticle spawn end_rod
+# Output: Portal shop created
+
+# Create permission-gated portal
+/portal create vip
+/portal setdestination vip world 0 100 0 0 0
+/portal setpermission vip pumpkin-unified-core.portal.vip
+# Only players with permission can use
+
+# Set cooldown
+/portal setcooldown spawn 10
+# 10 second cooldown between uses
+
+# Set frame material
+/portal setmaterial spawn gold_block
+# Visual frame (requires resource pack for custom)
+
+# List portals
+/portal list
+# Output:
+# - spawn -> world (100, 64, 200) [portal]
+# - shop [cmd: warp shop] [end_rod]
+
+# Teleport to portal location
+/portal teleport spawn
+# Output: Teleported to portal: spawn
+
+# Remove portal
+/portal remove old_portal
+# Output: Portal old_portal removed
+```
+
+## Cooldown System
+
+- Per-player cooldown
+- Stored in memory, resets on restart
+- Bypass with `pumpkin-unified-core.portal.bypass.cooldown` (Op)
+
+## Permissions
+
+Per-portal permission:
+```bash
+# Require specific permission
+/portal setpermission vip pumpkin-unified-core.portal.vip
+
+# Grant to group
+/lp group vip permission set pumpkin-unified-core.portal.vip true
+```
+
+## Storage
+
+Portals stored in `portals` table:
+- `name` - Unique identifier
+- `world` - World name
+- `x1, y1, z1` - Corner 1
+- `x2, y2, z2` - Corner 2
+- `destination` - Optional teleport target
+- `command` - Optional command
+- `particle` - Particle effect
+- `material` - Frame material
+- `cooldown` - Seconds
+- `permission` - Required permission
+
+## Permissions Setup
+
+```bash
+# Staff - manage portals
+/lp group mod permission set pumpkin-unified-core.portal.create true
+/lp group mod permission set pumpkin-unified-core.portal.remove true
+/lp group mod permission set pumpkin-unified-core.portal.setdestination true
+/lp group mod permission set pumpkin-unified-core.portal.setcommand true
+
+# Builders - teleport to portals
+/lp group builder permission set pumpkin-unified-core.portal.teleport true
+```
+
+## Notes
+
+- Portal region is 3D cuboid
+- Player detection on movement
+- Particles rendered client-side
+- Commands run as console (full permissions)
+
+## Next
+
+- [Staff Tools Module](/modules/stafftools)
+- [Configuration](/getting-started/configuration)

@@ -1,0 +1,64 @@
+---
+title: "Pumpkin Unified Core"
+description: "Unified EssentialsX + LuckPerms native Rust plugin for PumpkinMC"
+---
+
+# Pumpkin Unified Core
+
+**Pumpkin Unified Core (PUC)** is a comprehensive, all-in-one native Rust plugin for PumpkinMC that combines the functionality of multiple popular Bukkit/Spigot plugins into a single, high-performance package.
+
+## What's Included
+
+PUC replaces **8+ separate plugins** with one unified solution:
+
+| Module | Replaces | Description |
+|--------|----------|-------------|
+| **Economy** | EssentialsX Economy | Balance, payments, baltop, admin commands |
+| **Warps** | EssentialsX Warps | Create, manage, teleport to warps |
+| **Homes** | EssentialsX Homes | Multiple homes per player with limits |
+| **TPA** | EssentialsX TPA | Teleport requests with accept/deny |
+| **Kits** | EssentialsX Kits | Kit creation, cooldowns, kit signs |
+| **Moderation** | EssentialsX + LiteBans | Kick, ban, mute, jail, fly, god, vanish |
+| **Gamemode** | EssentialsX Gamemode | Quick gamemode switching |
+| **Permissions** | LuckPerms | Full permission system with contexts |
+| **Spawn** | EssentialsX Spawn | Spawn management with bed priority |
+| **Utility** | EssentialsX Utils | AFK, rules, MOTD, speed, repair, etc. |
+| **Chat** | EssentialsX Chat | Private messages, mail, broadcast |
+| **Holograms** | DecentHolograms | Floating text displays in world |
+| **Portals** | AdvancedPortals | Custom portals with commands/teleports |
+| **Staff Tools** | LiteBans + SuperVanish | Vanish, invsee, warnings, freeze, socialspy |
+| **Interactive Blocks** | Elevator + ArmorStandTools | Block elevators, armor stand poses, command signs |
+| **Scheduler** | CommandTimer | Cron-based scheduled tasks |
+| **Player Tracker** | Plan (light) | Playtime, IP history, audit logging |
+| **Chat & Tab** | EssentialsX Chat + TAB | Channels, hex colors, tab formatting |
+
+## Features
+
+- **Native Rust Performance** - Runs directly in PumpkinMC's WASM host, no JVM overhead
+- **Single Plugin** - One `.wasm` file, one configuration, one update
+- **Multi-Backend Storage** - SQLite (default), Redis, MySQL/PostgreSQL
+- **Hot Reload** - `/puc reload` to reload config without restart
+- **Vanilla Parity** - Behavior matches official Minecraft server
+- **LuckPerms Compatible** - Full permission API with contexts and inheritance
+
+## Requirements
+
+- PumpkinMC server (latest stable or nightly)
+- WASM plugin support enabled
+- Storage backend (SQLite included, Redis/MySQL optional)
+
+## Quick Start
+
+1. Download `pumpkin_unified_core.wasm` from releases
+2. Place in your `plugins/` directory
+3. Start server - config auto-generates at `config/pumpkin-unified-core/config.toml`
+4. Configure storage and features in `config.toml`
+5. Run `/puc reload` or restart server
+6. Grant permissions: `pumpkin-unified-core.*` for admins
+
+## Next Steps
+
+- [Installation Guide](/getting-started/installation)
+- [Configuration](/getting-started/configuration)
+- [Permissions](/getting-started/permissions)
+- [Modules Overview](/modules/overview)

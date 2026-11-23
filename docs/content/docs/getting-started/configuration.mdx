@@ -1,0 +1,228 @@
+---
+title: "Configuration"
+description: "Configure Pumpkin Unified Core for your server"
+---
+
+# Configuration
+
+PUC uses TOML and YAML configuration files with environment variable overrides.
+
+## Config Files
+
+| File | Priority | Description |
+|------|----------|-------------|
+| `config.default.toml` | Lowest | Built-in defaults (read-only) |
+| `config.default.yml` | Low | Built-in defaults (read-only) |
+| `config.toml` | Medium | Main configuration (edit this) |
+| `config.yml` | Medium | Alternative YAML config |
+| `PUC_*` env vars | Highest | Runtime overrides |
+
+## Storage Backend
+
+PUC supports multiple storage backends:
+
+### SQLite (Default)
+
+```toml
+[storage]
+backend = "sqlite"
+[storage.sqlite]
+path = "plugins/pumpkin-unified-core/data.db"
+max_connections = 10
+```
+
+### Redis
+
+```toml
+[storage]
+backend = "redis"
+[storage.redis]
+url = "redis://127.0.0.1:6379"
+max_connections = 10
+```
+
+### MySQL/PostgreSQL
+
+```toml
+[storage]
+backend = "mysql"
+[storage.mysql]
+url = "mysql://user:pass@localhost/pumpkin"
+max_connections = 10
+```
+
+## Module Configuration
+
+Each module has its own config section:
+
+```toml
+# Economy
+[economy]
+starting_balance = 100.0
+currency_symbol = "$"
+currency_format = "{symbol}{amount}"
+max_money = 1000000000.0
+min_money = 0.0
+log_transactions = true
+
+# Warps
+[warps]
+max_warps_per_player = 10
+warp_cooldown = 5
+per_warp_permissions = true
+
+# Homes
+[homes]
+max_homes_default = 3
+max_homes_vip = 10
+home_cooldown = 5
+home_on_death = false
+
+# TPA
+[tpa]
+request_timeout = 30
+teleport_cooldown = 5
+cross_world = true
+
+# Kits
+[kits]
+default_cooldown = 86400
+kit_signs = true
+
+# Moderation
+[moderation]
+ban_message = "You have been banned from this server."
+mute_message = "You have been muted."
+jail_message = "You have been jailed."
+max_tempban_duration = 2592000
+max_tempmute_duration = 2592000
+# jail_location = { world = "world", x = 0, y = 64, z = 0, yaw = 0, pitch = 0 }
+
+# Permissions
+[permissions]
+enable_contexts = true
+default_group = "default"
+[permissions.inheritance]
+max_depth = 10
+order = "depth-first"
+permissions.tracks = []
+
+# Spawn
+[spawn]
+respawn_at_home = false
+bed_priority = true
+# spawn_location = { world = "world", x = 0, y = 64, z = 0, yaw = 0, pitch = 0 }
+
+# Utility
+[utility]
+afk_timeout = 300
+# afk_kick_timeout = 600
+motd = "Welcome to the server!"
+rules = ["Be respectful", "No cheating"]
+max_players = 20
+
+# Chat
+[chat]
+format = "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}"
+broadcast_format = "&4[Broadcast] &r{message}"
+private_message_format = "&8[&bPM&8] &r{from}&r -> &r{to}&r: &f{message}"
+chat_radius = 100.0
+anti_spam = true
+spam_threshold = 5
+
+# Events
+[events]
+player_join_message = "&a{player} joined the game"
+player_leave_message = "&c{player} left the game"
+death_messages = true
+keep_inventory = false
+anti_build = true
+
+# Scheduler
+[scheduler]
+enabled = true
+
+# Holograms
+[holograms]
+visibility_range = 48.0
+max_holograms_per_player = 10
+update_interval = 20
+
+# Portals
+[portals]
+max_portals = 100
+default_cooldown = 5
+particle_effect = "portal"
+
+# Staff Tools
+[stafftools]
+enable_vanish = true
+enable_social_spy = true
+vanish_on_login = false
+
+# Interactive Blocks
+[interactiveblocks]
+elevator_material = "white_wool"
+armor_stand_editable = true
+command_signs_editable = true
+
+# Player Tracker
+[playertracker]
+track_playtime = true
+track_ips = true
+track_first_join = true
+audit_log_enabled = true
+audit_log_blocks = true
+audit_log_items = true
+audit_log_commands = true
+max_audit_entries = 1000
+
+# Chat & Tab
+[chattab]
+format = "&8[&7{group}&8] &r{prefix}&r{player}&r: &f{message}"
+tab_header = "&6&lWelcome to &e{server}&6!&r\n&7Online: &e{online}/{max}"
+tab_footer = "&7Website: &ehttps://example.com&r\n&7Discord: &ediscord.gg/example"
+chat_channels = true
+hex_colors = true
+hover_tooltips = true
+```
+
+## Environment Variables
+
+Override any config with `PUC_` prefix:
+
+```bash
+# Storage
+PUC_STORAGE__BACKEND=redis
+PUC_STORAGE__REDIS__URL=redis://localhost:6379
+
+# Economy
+PUC_ECONOMY__STARTING_BALANCE=500.0
+PUC_ECONOMY__CURRENCY_SYMBOL="€"
+
+# Disable modules
+PUC_HOLOGRAMS__MAX_HOLOGRAMS_PER_PLAYER=0
+PUC_PORTALS__MAX_PORTALS=0
+```
+
+## Hot Reload
+
+Apply config changes without restart:
+
+```bash
+/puc reload
+```
+
+Or from console:
+```
+puc reload
+```
+
+## Validation
+
+PUC validates config on load. Invalid values fall back to defaults with warnings in logs.
+
+## Next Steps
+
+- [Permissions](/getting-started/permissions) - Set up permission system
+- [Modules Overview](/modules/overview) - Explore all features

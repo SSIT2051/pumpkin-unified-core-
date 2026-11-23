@@ -1,0 +1,194 @@
+---
+title: "Staff Tools Module (ModSuite)"
+description: "Vanish, invsee, warnings, freeze, social spy, and staff chat"
+---
+
+# Staff Tools Module
+
+**Replaces:** LiteBans + SuperVanish  
+**Config Section:** `stafftools`  
+**Permission Prefix:** `pumpkin-unified-core.staff`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/vanish` | `pumpkin-unified-core.staff.vanish` | Toggle vanish mode |
+| `/invsee <player> [slot]` | `pumpkin-unified-core.staff.invsee` | View/edit inventory |
+| `/staffchat <message>` | `pumpkin-unified-core.staff.staffchat` | Staff chat |
+| `/sc <message>` | `pumpkin-unified-core.staff.staffchat` | Staff chat (alias) |
+| `/warn <player> <reason>` | `pumpkin-unified-core.staff.warn` | Warn player |
+| `/warnings <player>` | `pumpkin-unified-core.staff.warnings` | View warnings |
+| `/delwarn <player> <id>` | `pumpkin-unified-core.staff.delwarn` | Delete warning |
+| `/checkban <player>` | `pumpkin-unified-core.staff.checkban` | Check ban status |
+| `/checkmute <player>` | `pumpkin-unified-core.staff.checkmute` | Check mute status |
+| `/freeze <player>` | `pumpkin-unified-core.staff.freeze` | Freeze player |
+| `/unfreeze <player>` | `pumpkin-unified-core.staff.unfreeze` | Unfreeze player |
+| `/socialspy <player>` | `pumpkin-unified-core.staff.socialspy` | Spy on PMs |
+| `/clearchat` | `pumpkin-unified-core.staff.clearchat` | Clear chat for all |
+| `/broadcaststaff <message>` | `pumpkin-unified-core.staff.broadcaststaff` | Broadcast to staff |
+
+## Configuration
+
+```toml
+[stafftools]
+enable_vanish = true           # Enable vanish system
+enable_social_spy = true       # Enable social spy
+vanish_on_login = false        # Auto-vanish on join
+```
+
+## Vanish System
+
+```bash
+# Toggle vanish
+/vanish
+# Output: You are now vanished / You are no longer vanished
+
+# Effects:
+# - Invisible to other players
+# - Hidden from tab list
+# - Silent join/leave messages
+# - Can still interact with world
+# - Staff with vanish permission see you
+```
+
+## InvSee
+
+```bash
+# View inventory
+/invsee Steve
+# Output: Inventory of Steve (uuid):
+#   Slot 0: diamond_sword x1
+#   Slot 1: bread x32
+#   ...
+
+# Clear specific slot
+/invsee Steve 0
+# Output: Cleared slot 0 for Steve
+```
+
+## Staff Chat
+
+```bash
+# Send to staff chat
+/sc Meeting in 5 minutes
+# or
+/staffchat Meeting in 5 minutes
+
+# All staff with permission receive:
+# [Staff] Notch: Meeting in 5 minutes
+```
+
+## Warnings
+
+```bash
+# Warn player
+/warn Steve "Spamming chat"
+# Output: Warned Steve: Spamming chat
+# Steve receives: You were warned by Notch: Spamming chat
+
+# View warnings
+/warnings Steve
+# Output:
+# Warnings for Steve:
+# 1. Spamming chat (by Notch at 2024-01-15 10:30:00)
+# 2. Caps lock (by Alex at 2024-01-14 15:20:00)
+
+# Delete warning
+/delwarn Steve 1
+# Output: Deleted warning #1 for Steve
+```
+
+## Freeze
+
+```bash
+# Freeze player
+/freeze Steve
+# Output: Frozen Steve
+# Steve: You have been frozen by Notch
+
+# Unfreeze
+/unfreeze Steve
+# Output: Unfroze Steve
+# Steve: You have been unfrozen by Notch
+```
+
+## Social Spy
+
+```bash
+# Spy on player's PMs
+/socialspy Steve
+# Output: You are now social spying on Steve
+
+# Stop spying
+/socialspy Steve
+# Output: Stopped social spying on Steve
+
+# Receive format:
+# [SocialSpy] Steve: Hello there!
+```
+
+## Clear Chat
+
+```bash
+/clearchat
+# Sends 100 empty messages to all players
+# Then: "Chat was cleared by Notch"
+```
+
+## Staff Broadcast
+
+```bash
+/broadcaststaff Server restarting in 1 minute
+# All staff with permission receive:
+# [Staff Broadcast] Notch: Server restarting in 1 minute
+```
+
+## Check Commands
+
+```bash
+# Check ban status
+/checkban Steve
+# Output: Steve is banned. Reason: X-ray. Expires: never
+
+# Check mute status
+/checkmute Steve
+# Output: Steve is muted. Reason: Spam. Expires: 2024-01-15 11:00:00
+```
+
+## Storage
+
+- Warnings: `warnings` table
+- Vanish state: In-memory (persists in config)
+- Social spy targets: In-memory
+
+## Permissions Setup
+
+```bash
+# Moderators
+/lp group mod permission set pumpkin-unified-core.staff.vanish true
+/lp group mod permission set pumpkin-unified-core.staff.invsee true
+/lp group mod permission set pumpkin-unified-core.staff.warn true
+/lp group mod permission set pumpkin-unified-core.staff.warnings true
+/lp group mod permission set pumpkin-unified-core.staff.delwarn true
+/lp group mod permission set pumpkin-unified-core.staff.freeze true
+/lp group mod permission set pumpkin-unified-core.staff.socialspy true
+
+# Admins
+/lp group admin permission set pumpkin-unified-core.staff.* true
+/lp group admin permission set pumpkin-unified-core.staff.clearchat true
+/lp group admin permission set pumpkin-unified-core.staff.broadcaststaff true
+```
+
+## Notes
+
+- Vanish persists across relogs if `vanish_on_login = true`
+- Warnings persist across restarts
+- Social spy only works for online players
+- Freeze prevents all movement (including flying)
+- Staff chat requires `pumpkin-unified-core.staff.staffchat` permission
+
+## Next
+
+- [Interactive Blocks Module](/modules/interactiveblocks)
+- [Configuration](/getting-started/configuration)

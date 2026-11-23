@@ -1,0 +1,194 @@
+---
+title: "Events API"
+description: "Event handling system for Pumpkin Unified Core"
+---
+
+# Events API
+
+PUC uses PumpkinMC's event system for handling player events, chat, and gameplay.
+
+## EventModule
+
+Central event handler registration:
+
+```rust
+pub struct EventModule {
+    economy: Arc<EconomyModule>,
+    warps: Arc<WarpsModule>,
+    homes: Arc<HomesModule>,
+    // ... other modules
+}
+
+impl EventModule {
+    pub fn register_handlers(&self, context: &mut Context) -> Result<()> {
+        // Register all event handlers
+        self.register_join_handler(context)?;
+        self.register_leave_handler(context)?;
+        self.register_chat_handler(context)?;
+        self.register_death_handler(context)?;
+        self.register_block_handler(context)?;
+        Ok(())
+    }
+}
+```
+
+## Available Events
+
+### Player Events
+
+| Event | Description | Used By |
+|-------|-------------|---------|
+| `PlayerJoinEvent` | Player joins server | Homes, Spawn, Tracker, ChatTab |
+| `PlayerLeaveEvent` | Player leaves server | Homes, Tracker, StaffTools |
+| `PlayerChatEvent` | Player sends chat | Chat, ChatTab, StaffTools |
+| `PlayerDeathEvent` | Player dies | Events (keep inventory) |
+
+### Block Events
+
+| Event | Description | Used By |
+|-------|-------------|---------|
+| `BlockBreakEvent` | Block broken | PlayerTracker (audit) |
+| `BlockPlaceEvent` | Block placed | PlayerTracker (audit) |
+
+### Inventory Events
+
+| Event | Description | Used By |
+|-------|-------------|---------|
+| `InventoryClickEvent` | Inventory clicked | InteractiveBlocks (command signs) |
+
+## Registering Custom Events
+
+```rust
+use pumpkin_plugin_api::{
+    context::Context,
+    event::{AsyncPlayerChatEvent, EventHandler, EventPriority},
+    server::Server,
+};
+
+pub fn register_chat_handler(&self, context: &mut Context) -> Result<()> {
+    let chat_module = self.chat.clone();
+    
+    context.register_event_handler(
+        move |server, mut event| {
+            let chat = chat_module.clone();
+            tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current().block_on(async move {
+                    // Process chat
+                    chat.format_message(&event.player, &event.message).await;
+                    event
+                })
+            })
+        },
+        EventPriority::Normal,
+        false, // cancelled
+    )?;
+    
+    Ok(())
+}
+```
+
+## Event Priority
+
+| Priority | Value | Use Case |
+|----------|-------|----------|
+| `Highest` | 0 | Critical modifications |
+| `High` | 1 | Important changes |
+| `Normal` | 2 | Standard handling |
+| `Low` | 3 | Optional processing |
+| `Lowest` | 4 | Cleanup/logging |
+
+## Cancellable Events
+
+Some events can be cancelled:
+
+```rust
+context.register_event_handler(
+    move |_server, mut event| {
+        if should_cancel(&event) {
+            event.cancelled = true;
+        }
+        event
+    },
+    EventPriority::High,
+    true, // cancellable
+)?;
+```
+
+## Async Events
+
+For async operations (database, network):
+
+```rust
+context.register_event_handler(
+    move |server, event| {
+        let module = module.clone();
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async move {
+                module.async_handler(event).await;
+                event
+            })
+        })
+    },
+    EventPriority::Normal,
+    false,
+)?;
+```
+
+## StaffTools Events
+
+Example of vanish join/leave handling:
+
+```rust
+// Join event - hide vanished players
+context.register_event_handler(
+    move |server, mut event| {
+        let vanished = vanished.clone();
+        let player = event.player.clone();
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async move {
+                if vanished.contains_key(&player.get_uuid()) {
+                    event.join_message = TextComponent::empty();
+                    for target in server.get_online_players() {
+                        if target.get_uuid() != player.get_uuid() {
+                            target.hide_player(player.clone()).await.ok();
+                        }
+                    }
+                    player.set_invisible(true).await.ok();
+                    player.set_tab_list_listed(false).await.ok();
+                }
+                event
+            })
+        })
+    },
+    EventPriority::Normal,
+    false,
+)?;
+```
+
+## PlayerTracker Events
+
+Tracking joins/quits for playtime:
+
+```rust
+// In PlayerTrackerModule
+pub async fn track_join(&self, uuid: Uuid, name: &str, ip: &str) -> Result<()> {
+    // Update playtime, sessions, IPs
+}
+
+pub async fn track_quit(&self, uuid: Uuid) -> Result<()> {
+    // End session, update playtime
+}
+```
+
+## Best Practices
+
+1. **Use appropriate priority** - Normal for most, High for permissions
+2. **Handle errors gracefully** - Log but don't panic
+3. **Use block_in_place for async** - PumpkinMC events are sync
+4. **Check permissions early** - Avoid unnecessary processing
+5. **Cache frequently accessed data** - Use DashMap
+
+## Next
+
+- [Advanced Placeholders](/advanced/placeholders)
+- [Custom Commands](/advanced/custom-commands)

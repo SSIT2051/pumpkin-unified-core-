@@ -1,0 +1,135 @@
+---
+title: "Economy Module"
+description: "Currency system with balance, payments, and admin commands"
+---
+
+# Economy Module
+
+**Replaces:** EssentialsX Economy  
+**Config Section:** `economy`  
+**Permission Prefix:** `pumpkin-unified-core.eco`
+
+## Commands
+
+### Player Commands
+
+| Command | Aliases | Permission | Description |
+|---------|---------|------------|-------------|
+| `/balance [player]` | `/bal`, `/money` | `pumpkin-unified-core.balance` | Check balance |
+| `/pay <player> <amount>` | - | `pumpkin-unified-core.pay` | Pay another player |
+| `/baltop [page]` | `/balancetop` | `pumpkin-unified-core.balance` | Top balances |
+
+### Admin Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/eco give <player> <amount>` | `pumpkin-unified-core.eco.give` | Give money to player |
+| `/eco take <player> <amount>` | `pumpkin-unified-core.eco.take` | Take money from player |
+| `/eco set <player> <amount>` | `pumpkin-unified-core.eco.set` | Set player's balance |
+
+## Configuration
+
+```toml
+[economy]
+starting_balance = 100.0          # Starting balance for new players
+currency_symbol = "$"             # Currency symbol
+currency_format = "{symbol}{amount}"  # Format: {symbol}{amount}, {amount}{symbol}
+max_money = 1000000000.0          # Maximum balance
+min_money = 0.0                   # Minimum balance (negative for debt)
+log_transactions = true           # Log all transactions
+```
+
+## Placeholders
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{symbol}` | Currency symbol ($) |
+| `{amount}` | Formatted amount |
+| `{balance}` | Player's balance |
+
+## Examples
+
+```bash
+# Check your balance
+/balance
+# Output: Your balance: $100.00
+
+# Check another player's balance (requires permission)
+/balance Notch
+# Output: Notch's balance: $5000.00
+
+# Pay another player
+/pay Steve 50
+# Output: You paid Steve $50.00
+
+# View top 10 balances
+/baltop
+# Output: 
+# 1. Notch - $10000.00
+# 2. Steve - $5000.00
+# ...
+
+# Admin: Give money
+/eco give Steve 1000
+# Output: Gave $1000.00 to Steve
+
+# Admin: Take money
+/eco take Steve 500
+# Output: Took $500.00 from Steve
+
+# Admin: Set exact balance
+/eco set Steve 2500
+# Output: Set Steve's balance to $2500.00
+```
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.balance true
+/lp group default permission set pumpkin-unified-core.pay true
+
+# VIP players (higher limits)
+/lp group vip permission set pumpkin-unified-core.eco.give true
+/lp group vip permission set pumpkin-unified-core.eco.take true
+
+# Admins
+/lp group admin permission set pumpkin-unified-core.eco.* true
+```
+
+## Storage
+
+Economy data stored in `economy` table:
+- `uuid` - Player UUID
+- `balance` - Current balance (BIGINT, stored as cents)
+
+## API
+
+```rust
+// Get balance
+let balance = economy.get_balance(uuid).await?;
+
+// Add money
+economy.add_balance(uuid, 100.0).await?;
+
+// Remove money
+economy.take_balance(uuid, 50.0).await?;
+
+// Set exact balance
+economy.set_balance(uuid, 1000.0).await?;
+
+// Format for display
+let formatted = economy.format_money(balance);
+```
+
+## Notes
+
+- Balance stored as integer cents to avoid floating-point errors
+- Transactions logged when `log_transactions = true`
+- Starting balance applied on first join
+- Negative balances allowed if `min_money < 0`
+
+## Next
+
+- [Warps Module](/modules/warps)
+- [Configuration](/getting-started/configuration)

@@ -1,0 +1,98 @@
+---
+title: "Spawn Module"
+description: "Spawn management with bed priority and home respawn"
+---
+
+# Spawn Module
+
+**Replaces:** EssentialsX Spawn  
+**Config Section:** `spawn`  
+**Permission Prefix:** `pumpkin-unified-core.spawn`
+
+## Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/spawn` | `pumpkin-unified-core.spawn` | Teleport to spawn |
+| `/setspawn` | `pumpkin-unified-core.setspawn` | Set spawn at your location |
+
+## Configuration
+
+```toml
+[spawn]
+# spawn_location = { world = "world", x = 0, y = 64, z = 0, yaw = 0, pitch = 0 }
+respawn_at_home = false          # Respawn at home instead of spawn
+bed_priority = true              # Use bed spawn if available
+```
+
+## Spawn Priority
+
+1. **Bed spawn** (if `bed_priority = true` and player has bed)
+2. **Home spawn** (if `respawn_at_home = true` and player has home)
+3. **Server spawn** (set by `/setspawn`)
+4. **World default** (vanilla world spawn)
+
+## Examples
+
+```bash
+# Set spawn at your location
+/setspawn
+# Output: Spawn point set
+
+# Teleport to spawn
+/spawn
+# Output: Teleported to spawn
+
+# Configure in config.toml
+[spawn]
+spawn_location = { world = "world", x = 100, y = 64, z = 200, yaw = 0, pitch = 0 }
+respawn_at_home = true
+bed_priority = true
+```
+
+## Bed Priority
+
+When `bed_priority = true`:
+- Player's last slept bed takes precedence
+- Works across dimensions
+- Bed must be valid (not obstructed)
+
+When `bed_priority = false`:
+- Ignores bed spawns
+- Uses home or server spawn
+
+## Home Respawn
+
+When `respawn_at_home = true`:
+- Player respawns at first home (`/home` without args)
+- Falls back to server spawn if no homes
+- Requires `pumpkin-unified-core.home` permission
+
+## Storage
+
+Spawn stored in `spawn` table:
+- `world` - World name
+- `x, y, z` - Coordinates
+- `yaw, pitch` - Rotation
+
+## Permissions Setup
+
+```bash
+# Default players
+/lp group default permission set pumpkin-unified-core.spawn true
+
+# Staff - set spawn
+/lp group mod permission set pumpkin-unified-core.setspawn true
+```
+
+## Notes
+
+- Spawn is global (same for all worlds unless configured)
+- `/spawn` respects spawn priority
+- Config spawn_location overrides in-game setspawn on reload
+- Bed spawn tracked by PumpkinMC internally
+
+## Next
+
+- [Utility Module](/modules/utility)
+- [Configuration](/getting-started/configuration)

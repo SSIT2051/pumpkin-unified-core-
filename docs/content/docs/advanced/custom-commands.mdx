@@ -1,0 +1,242 @@
+---
+title: "Custom Commands"
+description: "Creating custom commands and extending PUC"
+---
+
+# Custom Commands
+
+Extend PUC with custom commands using the command API.
+
+## Command Structure
+
+Commands use the builder pattern:
+
+```rust
+use pumpkin_plugin_api::{
+    command::{Command, CommandSender},
+    context::Context,
+};
+
+pub fn register_custom_command(context: &mut Context) {
+    let cmd = Command::new("mycommand")
+        .alias("mc")
+        .permission("myplugin.mycommand")
+        .description("My custom command")
+        .argument("target")
+        .argument("value")
+        .handler(async_handler!(move |sender, server, args| {
+            let target = args.get(0).ok_or_else(|| anyhow::anyhow!("Usage: /mycommand <target> <value>"))?;
+            let value = args.get(1).ok_or_else(|| anyhow::anyhow!("Usage: /mycommand <target> <value>"))?;
+            
+            sender.send_message(&format_text(&format!("Target: {}, Value: {}", target, value)));
+            Ok(())
+        }))
+        .build();
+    
+    context.register_command(cmd);
+}
+```
+
+## Command Arguments
+
+### Required Arguments
+
+```rust
+.argument("name")           // Required positional
+.argument("value")          // Required positional
+```
+
+### Optional Arguments
+
+```rust
+.argument("reason")         // Optional (handled in handler)
+```
+
+### Subcommands
+
+```rust
+.subcommand(
+    Command::new("set")
+        .argument("key")
+        .argument("value")
+        .handler(async_handler!(...))
+        .build()
+)
+.subcommand(
+    Command::new("get")
+        .argument("key")
+        .handler(async_handler!(...))
+        .build()
+)
+```
+
+## Permission Nodes
+
+Follow PUC convention: `pumpkin-unified-core.<module>.<action>`
+
+```rust
+.permission("pumpkin-unified-core.mycommand.use")
+.permission("pumpkin-unified-core.mycommand.admin")
+```
+
+## Player-Only Commands
+
+```rust
+.handler(async_handler!(move |sender, server, args| {
+    let player = sender.as_player()
+        .ok_or_else(|| anyhow::anyhow!("Only players can use this command"))?;
+    
+    // Use player methods
+    let location = player.get_location();
+    player.teleport(...).await?;
+    
+    Ok(())
+}))
+```
+
+## Console Commands
+
+```rust
+.handler(async_handler!(move |sender, server, args| {
+    // sender is ConsoleSender
+    sender.send_message(&format_text("Command executed from console"));
+    Ok(())
+}))
+```
+
+## Target Selectors
+
+Support player selectors:
+
+```rust
+.argument("target")  // Can be name, @p, @a, @r, @e
+
+// In handler:
+let target = if args[0].starts_with('@') {
+    // Parse selector
+    match args[0].as_str() {
+        "@p" => sender.as_player()?,
+        "@a" => server.get_online_players().into_iter().next(),
+        "@r" => server.get_online_players().choose(&mut rand::thread_rng()),
+        _ => return Err(anyhow::anyhow!("Unknown selector")),
+    }
+} else {
+    server.get_player(&args[0])?
+};
+```
+
+## Tab Completion
+
+Add tab completion (if supported by API):
+
+```rust
+.tab_completion(move |sender, args| {
+    if args.len() == 1 {
+        vec!["create", "delete", "list"]
+    } else if args.len() == 2 && args[0] == "create" {
+        server.get_online_players().map(|p| p.get_name()).collect()
+    } else {
+        vec![]
+    }
+})
+```
+
+## Async Handler Macro
+
+Use the provided macro for async handling:
+
+```rust
+use crate::utils::macros::async_handler;
+
+.handler(async_handler!(move |sender, server, args| {
+    // Async code here
+    let data = database.query().await?;
+    sender.send_message(&format_text(&format!("Result: {}", data)));
+    Ok(())
+}))
+```
+
+## Error Handling
+
+```rust
+.handler(async_handler!(move |sender, server, args| {
+    let result = do_something().await;
+    
+    match result {
+        Ok(value) => {
+            sender.send_message(&format_text(&format!("Success: {}", value)));
+        }
+        Err(e) => {
+            sender.send_message(&format_text(&format!("&cError: {}", e)));
+            // Don't return Err - command shows error automatically
+        }
+    }
+    Ok(())
+}))
+```
+
+## Command Registration in Module
+
+```rust
+pub struct MyModule {
+    // ...
+}
+
+impl MyModule {
+    pub fn register_commands(&self, context: &mut Context) {
+        // Register all commands
+        self.register_cmd1(context);
+        self.register_cmd2(context);
+    }
+    
+    fn register_cmd1(&self, context: &mut Context) {
+        let module = self.clone();
+        let cmd = Command::new("cmd1")
+            .permission("pumpkin-unified-core.my.cmd1")
+            .handler(async_handler!(move |sender, server, args| {
+                // Use module
+                module.do_something().await?;
+                Ok(())
+            }))
+            .build();
+        context.register_command(cmd);
+    }
+}
+```
+
+## Integration with PUC
+
+Add to your module's `register_commands`:
+
+```rust
+// In your module
+pub fn register_commands(&self, context: &mut Context) {
+    // ... existing commands
+    
+    // Custom command
+    let module = self.clone();
+    let cmd = Command::new("myfeature")
+        .permission("pumpkin-unified-core.myfeature.use")
+        .description("My custom feature")
+        .handler(async_handler!(move |sender, server, args| {
+            module.handle_myfeature(sender, server, args).await
+        }))
+        .build();
+    context.register_command(cmd);
+}
+```
+
+## Best Practices
+
+1. **Validate arguments early** - Return clear usage messages
+2. **Check permissions** - Use proper permission nodes
+3. **Handle both player and console** - Use `as_player()` appropriately
+4. **Use async_handler** - For database/network operations
+5. **Return Ok(())** - Even on user errors (show message instead)
+6. **Format messages** - Use `format_text` for colors
+7. **Log errors** - Use `tracing::error!` for debugging
+
+## Next
+
+- [API Reference](/api/storage)
+- [Modules Overview](/modules/overview)

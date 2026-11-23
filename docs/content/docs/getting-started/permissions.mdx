@@ -1,0 +1,350 @@
+---
+title: "Permissions"
+description: "Set up permissions for Pumpkin Unified Core"
+---
+
+# Permissions
+
+PUC uses a hierarchical permission system with the `pumpkin-unified-core.` namespace.
+
+## Permission Structure
+
+All permissions follow the pattern:
+```
+pumpkin-unified-core.<module>.<action>
+```
+
+## Default Permissions
+
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.*` | Op | All PUC permissions |
+| `pumpkin-unified-core.admin` | Op | Admin shortcut |
+
+## Module Permissions
+
+### Economy
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.balance` | Allow | Check own balance |
+| `pumpkin-unified-core.balance.others` | Op | Check others' balance |
+| `pumpkin-unified-core.pay` | Allow | Pay other players |
+| `pumpkin-unified-core.eco` | Op | Economy admin commands |
+| `pumpkin-unified-core.eco.give` | Op | Give money |
+| `pumpkin-unified-core.eco.take` | Op | Take money |
+| `pumpkin-unified-core.eco.set` | Op | Set balance |
+
+### Warps
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.warp` | Allow | Use warps |
+| `pumpkin-unified-core.warp.others` | Op | Warp others |
+| `pumpkin-unified-core.setwarp` | Op | Create warps |
+| `pumpkin-unified-core.delwarp` | Op | Delete warps |
+| `pumpkin-unified-core.warps` | Allow | List warps |
+| `pumpkin-unified-core.warpinfo` | Allow | View warp info |
+
+### Homes
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.home` | Allow | Teleport to home |
+| `pumpkin-unified-core.home.others` | Op | Teleport others to home |
+| `pumpkin-unified-core.sethome` | Allow | Set home |
+| `pumpkin-unified-core.delhome` | Allow | Delete home |
+| `pumpkin-unified-core.homes` | Allow | List homes |
+| `pumpkin-unified-core.homes.limit.*` | Op | Bypass home limits |
+
+### TPA
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.tpa` | Allow | Request teleport |
+| `pumpkin-unified-core.tpahere` | Allow | Request teleport here |
+| `pumpkin-unified-core.tpaccept` | Allow | Accept teleport |
+| `pumpkin-unified-core.tpdeny` | Allow | Deny teleport |
+| `pumpkin-unified-core.tptoggle` | Allow | Toggle TPA requests |
+
+### Kits
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.kit` | Allow | Use kits |
+| `pumpkin-unified-core.kit.*` | Op | Use specific kits |
+| `pumpkin-unified-core.kits` | Allow | List kits |
+| `pumpkin-unified-core.createkit` | Op | Create kits |
+| `pumpkin-unified-core.showkit` | Op | View kit contents |
+
+### Moderation
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.kick` | Op | Kick players |
+| `pumpkin-unified-core.ban` | Op | Ban players |
+| `pumpkin-unified-core.tempban` | Op | Temp ban players |
+| `pumpkin-unified-core.unban` | Op | Unban players |
+| `pumpkin-unified-core.mute` | Op | Mute players |
+| `pumpkin-unified-core.unmute` | Op | Unmute players |
+| `pumpkin-unified-core.jail` | Op | Jail players |
+| `pumpkin-unified-core.unjail` | Op | Unjail players |
+| `pumpkin-unified-core.fly` | Op | Toggle flight |
+| `pumpkin-unified-core.fly.others` | Op | Toggle others' flight |
+| `pumpkin-unified-core.god` | Op | Toggle god mode |
+| `pumpkin-unified-core.god.others` | Op | Toggle others' god mode |
+| `pumpkin-unified-core.heal` | Op | Heal players |
+| `pumpkin-unified-core.heal.others` | Op | Heal others |
+| `pumpkin-unified-core.feed` | Op | Feed players |
+| `pumpkin-unified-core.feed.others` | Op | Feed others |
+| `pumpkin-unified-core.vanish` | Op | Toggle vanish |
+
+### Gamemode
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.gamemode` | Op | Change gamemode |
+| `pumpkin-unified-core.gamemode.survival` | Op | Survival mode |
+| `pumpkin-unified-core.gamemode.creative` | Op | Creative mode |
+| `pumpkin-unified-core.gamemode.adventure` | Op | Adventure mode |
+| `pumpkin-unified-core.gamemode.spectator` | Op | Spectator mode |
+
+### Spawn
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.spawn` | Allow | Teleport to spawn |
+| `pumpkin-unified-core.setspawn` | Op | Set spawn |
+
+### Utility
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.afk` | Allow | Toggle AFK |
+| `pumpkin-unified-core.afk.others` | Op | Toggle others' AFK |
+| `pumpkin-unified-core.rules` | Allow | View rules |
+| `pumpkin-unified-core.motd` | Allow | View MOTD |
+| `pumpkin-unified-core.list` | Allow | List players |
+| `pumpkin-unified-core.whois` | Op | Player info |
+| `pumpkin-unified-core.speed` | Op | Set speed |
+| `pumpkin-unified-core.speed.others` | Op | Set others' speed |
+| `pumpkin-unified-core.compass` | Allow | Get compass |
+| `pumpkin-unified-core.top` | Allow | Teleport to top block |
+| `pumpkin-unified-core.back` | Allow | Teleport back |
+| `pumpkin-unified-core.back.ondeath` | Allow | Back on death |
+| `pumpkin-unified-core.seen` | Allow | Check last seen |
+| `pumpkin-unified-core.repair` | Op | Repair item |
+| `pumpkin-unified-core.repair.others` | Op | Repair others' item |
+| `pumpkin-unified-core.disposal` | Op | Open disposal |
+| `pumpkin-unified-core.workbench` | Allow | Open workbench |
+| `pumpkin-unified-core.anvil` | Allow | Open anvil |
+| `pumpkin-unified-core.enderchest` | Allow | Open ender chest |
+| `pumpkin-unified-core.enderchest.others` | Op | Open others' ender chest |
+| `pumpkin-unified-core.weather` | Op | Change weather |
+| `pumpkin-unified-core.time` | Op | Change time |
+| `pumpkin-unified-core.lightning` | Op | Summon lightning |
+| `pumpkin-unified-core.butcher` | Op | Kill nearby mobs |
+| `pumpkin-unified-core.extinguish` | Op | Extinguish fires |
+
+### Chat
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.msg` | Allow | Private message |
+| `pumpkin-unified-core.reply` | Allow | Reply to PM |
+| `pumpkin-unified-core.mail` | Allow | Read mail |
+| `pumpkin-unified-core.mail.send` | Allow | Send mail |
+| `pumpkin-unified-core.broadcast` | Op | Global broadcast |
+| `pumpkin-unified-core.broadcastworld` | Op | World broadcast |
+
+### Holograms
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.hologram.create` | Op | Create hologram |
+| `pumpkin-unified-core.hologram.remove` | Op | Remove hologram |
+| `pumpkin-unified-core.hologram.list` | Allow | List holograms |
+| `pumpkin-unified-core.hologram.teleport` | Op | Teleport to hologram |
+| `pumpkin-unified-core.hologram.edit` | Op | Edit hologram text |
+| `pumpkin-unified-core.hologram.move` | Op | Move hologram |
+| `pumpkin-unified-core.hologram.copy` | Op | Copy hologram |
+| `pumpkin-unified-core.hologram.readtext` | Op | Load text from file |
+
+### Portals
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.portal.create` | Op | Create portal |
+| `pumpkin-unified-core.portal.remove` | Op | Remove portal |
+| `pumpkin-unified-core.portal.list` | Allow | List portals |
+| `pumpkin-unified-core.portal.setdestination` | Op | Set destination |
+| `pumpkin-unified-core.portal.setcommand` | Op | Set command |
+| `pumpkin-unified-core.portal.setparticle` | Op | Set particle |
+| `pumpkin-unified-core.portal.setmaterial` | Op | Set material |
+| `pumpkin-unified-core.portal.setcooldown` | Op | Set cooldown |
+| `pumpkin-unified-core.portal.setpermission` | Op | Set permission |
+| `pumpkin-unified-core.portal.teleport` | Op | Teleport to portal |
+
+### Staff Tools
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.staff.vanish` | Op | Toggle vanish |
+| `pumpkin-unified-core.staff.invsee` | Op | View inventories |
+| `pumpkin-unified-core.staff.staffchat` | Op | Staff chat |
+| `pumpkin-unified-core.staff.warn` | Op | Warn players |
+| `pumpkin-unified-core.staff.warnings` | Op | View warnings |
+| `pumpkin-unified-core.staff.delwarn` | Op | Delete warnings |
+| `pumpkin-unified-core.staff.checkban` | Op | Check ban status |
+| `pumpkin-unified-core.staff.checkmute` | Op | Check mute status |
+| `pumpkin-unified-core.staff.freeze` | Op | Freeze players |
+| `pumpkin-unified-core.staff.unfreeze` | Op | Unfreeze players |
+| `pumpkin-unified-core.staff.socialspy` | Op | Spy on messages |
+| `pumpkin-unified-core.staff.clearchat` | Op | Clear chat |
+| `pumpkin-unified-core.staff.broadcaststaff` | Op | Staff broadcast |
+
+### Interactive Blocks
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.interactive.elevator.create` | Op | Create elevator |
+| `pumpkin-unified-core.interactive.elevator.remove` | Op | Remove elevator |
+| `pumpkin-unified-core.interactive.elevator.list` | Allow | List elevators |
+| `pumpkin-unified-core.interactive.elevator.setfloor` | Op | Set floor |
+| `pumpkin-unified-core.interactive.elevator.setmaterial` | Op | Set material |
+| `pumpkin-unified-core.interactive.armorstand.pose` | Op | Edit armor stand pose |
+| `pumpkin-unified-core.interactive.armorstand.remove` | Op | Remove armor stand |
+| `pumpkin-unified-core.interactive.armorstand.list` | Allow | List armor stands |
+| `pumpkin-unified-core.interactive.commandsign.create` | Op | Create command sign |
+| `pumpkin-unified-core.interactive.commandsign.remove` | Op | Remove command sign |
+| `pumpkin-unified-core.interactive.commandsign.list` | Allow | List command signs |
+
+### Scheduler
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.scheduler.create` | Op | Create task |
+| `pumpkin-unified-core.scheduler.remove` | Op | Remove task |
+| `pumpkin-unified-core.scheduler.list` | Op | List tasks |
+| `pumpkin-unified-core.scheduler.enable` | Op | Enable task |
+| `pumpkin-unified-core.scheduler.disable` | Op | Disable task |
+| `pumpkin-unified-core.scheduler.run` | Op | Run task now |
+| `pumpkin-unified-core.scheduler.edit` | Op | Edit task |
+| `pumpkin-unified-core.scheduler.reload` | Op | Reload tasks |
+
+### Player Tracker
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.tracker.playtime` | Allow | Check playtime |
+| `pumpkin-unified-core.tracker.playtime.top` | Op | View top playtimes |
+| `pumpkin-unified-core.tracker.seen` | Allow | Check last seen |
+| `pumpkin-unified-core.tracker.firstjoin` | Op | Check first join |
+| `pumpkin-unified-core.tracker.iphistory` | Op | View IP history |
+| `pumpkin-unified-core.tracker.session` | Op | View sessions |
+| `pumpkin-unified-core.tracker.auditlog` | Op | View audit log |
+| `pumpkin-unified-core.tracker.auditlog.block` | Op | View block logs |
+| `pumpkin-unified-core.tracker.auditlog.item` | Op | View item logs |
+| `pumpkin-unified-core.tracker.auditlog.command` | Op | View command logs |
+
+### Chat & Tab
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.chattab.format` | Op | Manage chat format |
+| `pumpkin-unified-core.chattab.tab` | Op | Manage tab list |
+| `pumpkin-unified-core.chattab.channel` | Allow | Use channels |
+| `pumpkin-unified-core.chattab.hex` | Allow | Use hex colors |
+| `pumpkin-unified-core.chattab.hover` | Allow | View hover tooltips |
+
+### LuckPerms
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `pumpkin-unified-core.lp.user.info` | Op | User info |
+| `pumpkin-unified-core.lp.user.editor` | Op | User editor |
+| `pumpkin-unified-core.lp.user.promote` | Op | Promote user |
+| `pumpkin-unified-core.lp.user.demote` | Op | Demote user |
+| `pumpkin-unified-core.lp.user.showtracks` | Op | Show tracks |
+| `pumpkin-unified-core.lp.user.clear` | Op | Clear user |
+| `pumpkin-unified-core.lp.user.clone` | Op | Clone user |
+| `pumpkin-unified-core.lp.user.permission` | Op | User permissions |
+| `pumpkin-unified-core.lp.user.parent` | Op | User groups |
+| `pumpkin-unified-core.lp.user.meta` | Op | User metadata |
+| `pumpkin-unified-core.lp.group.info` | Op | Group info |
+| `pumpkin-unified-core.lp.group.editor` | Op | Group editor |
+| `pumpkin-unified-core.lp.group.listmembers` | Op | List members |
+| `pumpkin-unified-core.lp.group.setweight` | Op | Set weight |
+| `pumpkin-unified-core.lp.group.setdisplayname` | Op | Set display name |
+| `pumpkin-unified-core.lp.group.showtracks` | Op | Show tracks |
+| `pumpkin-unified-core.lp.group.clear` | Op | Clear group |
+| `pumpkin-unified-core.lp.group.rename` | Op | Rename group |
+| `pumpkin-unified-core.lp.group.clone` | Op | Clone group |
+| `pumpkin-unified-core.lp.group.permission` | Op | Group permissions |
+| `pumpkin-unified-core.lp.group.parent` | Op | Group inheritance |
+| `pumpkin-unified-core.lp.group.meta` | Op | Group metadata |
+| `pumpkin-unified-core.lp.track.createtrack` | Op | Create track |
+| `pumpkin-unified-core.lp.track.deletetrack` | Op | Delete track |
+| `pumpkin-unified-core.lp.track.listtracks` | Op | List tracks |
+| `pumpkin-unified-core.lp.log.recent` | Op | Recent logs |
+| `pumpkin-unified-core.lp.log.search` | Op | Search logs |
+| `pumpkin-unified-core.lp.log.notify` | Op | Log notifications |
+| `pumpkin-unified-core.lp.sync` | Op | Sync permissions |
+| `pumpkin-unified-core.lp.info` | Op | Plugin info |
+| `pumpkin-unified-core.lp.editor` | Op | Permission editor |
+| `pumpkin-unified-core.lp.applyedits` | Op | Apply edits |
+| `pumpkin-unified-core.lp.verbose` | Op | Verbose output |
+| `pumpkin-unified-core.lp.tree` | Op | Permission tree |
+| `pumpkin-unified-core.lp.search` | Op | Search permissions |
+| `pumpkin-unified-core.lp.import` | Op | Import permissions |
+| `pumpkin-unified-core.lp.export` | Op | Export permissions |
+| `pumpkin-unified-core.lp.reloadconfig` | Op | Reload config |
+| `pumpkin-unified-core.lp.translations` | Op | Translations |
+
+## Setting Up Groups
+
+### Example: Default Group
+```bash
+/lp creategroup default
+/lp group default permission set pumpkin-unified-core.balance true
+/lp group default permission set pumpkin-unified-core.pay true
+/lp group default permission set pumpkin-unified-core.warp true
+/lp group default permission set pumpkin-unified-core.sethome true
+/lp group default permission set pumpkin-unified-core.tpa true
+/lp group default permission set pumpkin-unified-core.kit true
+```
+
+### Example: VIP Group
+```bash
+/lp creategroup vip
+/lp group vip parent add default
+/lp group vip permission set pumpkin-unified-core.homes.limit.10 true
+/lp group vip permission set pumpkin-unified-core.kit.vip true
+/lp group vip permission set pumpkin-unified-core.fly true
+```
+
+### Example: Admin Group
+```bash
+/lp creategroup admin
+/lp group admin permission set pumpkin-unified-core.* true
+```
+
+## Assigning Players
+
+```bash
+# Add to group
+/lp user <player> parent add vip
+
+# Set specific permission
+/lp user <player> permission set pumpkin-unified-core.fly true
+
+# Remove permission
+/lp user <player> permission unset pumpkin-unified-core.fly
+```
+
+## Contexts
+
+PUC supports LuckPerms contexts for world-specific permissions:
+
+```bash
+# World-specific permission
+/lp user <player> permission set pumpkin-unified-core.fly true world=world_nether
+
+# Server-specific (for Bungee/Velocity)
+/lp user <player> permission set pumpkin-unified-core.fly true server=survival
+```
+
+## Migration from EssentialsX/LuckPerms
+
+Permission mapping is 1:1:
+- `essentials.*` → `pumpkin-unified-core.*`
+- `luckperms.*` → `pumpkin-unified-core.lp.*`
+
+Use `/lp import` for bulk migration.
+
+## Next Steps
+
+- [Modules Overview](/modules/overview) - Explore all features
+- [Configuration](/getting-started/configuration) - Customize settings

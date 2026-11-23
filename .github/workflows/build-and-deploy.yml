@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -44,12 +46,13 @@ jobs:
 
       - name: Build release WASM
         run: |
-          cargo build --release --target ${{ env.WASM_TARGET }} --package pumpkin-unified-core
+          cd pumpkin-unified-core
+          cargo build --release --target ${{ env.WASM_TARGET }}
 
       - name: Verify artifact exists
         run: |
-          ls -la target/${{ env.WASM_TARGET }}/release/${{ env.PLUGIN_NAME }}
-          echo "ARTIFACT_PATH=target/${{ env.WASM_TARGET }}/release/${{ env.PLUGIN_NAME }}" >> $GITHUB_ENV
+          ls -la pumpkin-unified-core/target/${{ env.WASM_TARGET }}/release/${{ env.PLUGIN_NAME }}
+          echo "ARTIFACT_PATH=pumpkin-unified-core/target/${{ env.WASM_TARGET }}/release/${{ env.PLUGIN_NAME }}" >> $GITHUB_ENV
 
       - name: Upload WASM artifact
         uses: actions/upload-artifact@v4
@@ -115,6 +118,7 @@ jobs:
       - name: Cleanup local build artifacts
         if: always()
         run: |
+          cd pumpkin-unified-core
           rm -rf target
           cargo clean
           echo "Build cache cleaned"
