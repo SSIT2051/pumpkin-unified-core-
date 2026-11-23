@@ -6,6 +6,8 @@ license = "MIT OR Apache-2.0"
 authors = ["SSIT2051"]
 description = "Unified EssentialsX + LuckPerms plugin for PumpkinMC (WASM component)"
 
+[workspace]
+
 [lib]
 crate-type = ["cdylib"]
 
@@ -22,16 +24,31 @@ fs2 = { version = "0.4", optional = true }
 rusqlite = { version = "0.31", features = ["bundled"], optional = true }
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], optional = true }
 uuid = { version = "1.0", features = ["serde", "v4"], optional = true }
+anyhow = "1.0"
+tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time"], default-features = false }
+sqlx = { version = "0.8", features = ["runtime-tokio", "any", "sqlite", "mysql", "postgres"] }
+redis = { version = "0.23", features = ["tokio-comp", "connection-manager"] }
+async-trait = "0.1"
+regex = "1.10"
+lazy_static = "1.4"
+cron = "0.17"
+tokio-cron-scheduler = { version = "0.15", features = ["signal"] }
+dashmap = "6.2"
+chrono = { version = "0.4", features = ["std", "serde"] }
 
 # Force tokio to use only WASM-compatible features for wasm32-wasip2 target
 [target.wasm32-wasip2.dependencies]
 tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time"], default-features = false }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
+redis = { version = "0.23", features = [] }
+tokio-cron-scheduler = { version = "0.15", features = [] }
 
 [features]
 default = []
 sqlite = ["rusqlite"]
 http = ["reqwest", "uuid"]
 file-locking = ["fs2"]
+signal = ["tokio/signal"]
 
 [profile.release]
 lto = true
