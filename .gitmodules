@@ -1,4 +1,4 @@
 [submodule "pumpkin-unified-core"]
 	path = pumpkin-unified-core
-	url = https://github.com/SSIT2051/pumpkin-unified-core.git
+	url = https://github.com/SSIT2051/pumpkin-unified-core-
 	branch = main
