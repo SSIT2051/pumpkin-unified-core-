@@ -26,8 +26,6 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls"], optional = true
 uuid = { version = "1.0", features = ["serde", "v4"], optional = true }
 anyhow = "1.0"
 tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time"], default-features = false }
-sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"], default-features = false }
-redis = { version = "0.23", features = ["tokio-comp", "connection-manager"], default-features = false }
 async-trait = "0.1"
 regex = "1.10"
 lazy_static = "1.4"
@@ -36,11 +34,15 @@ tokio-cron-scheduler = { version = "0.15", default-features = false }
 dashmap = "6.2"
 chrono = { version = "0.4", features = ["std", "serde"] }
 
+# sqlx, redis, and their tokio dependencies are NOT compatible with wasm32-wasip2
+# They are only used for native builds (non-wasm targets)
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "mysql", "postgres"], default-features = false }
+redis = { version = "0.23", features = ["tokio-comp", "connection-manager"], default-features = false }
+
 # Force tokio to use only WASM-compatible features for wasm32-wasip2 target
 [target.wasm32-wasip2.dependencies]
 tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time"], default-features = false }
-sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"], default-features = false }
-redis = { version = "0.23", features = [], default-features = false }
 tokio-cron-scheduler = { version = "0.15", default-features = false }
 
 [features]
