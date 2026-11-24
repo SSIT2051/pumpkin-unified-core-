@@ -121,8 +121,56 @@ assert_is_empty = "allow"
 [workspace.package]
 version = "0.2.2+26.3-26.63"
 edition = "2024"
-rust-version = "1.97"
-license = "GPL-3.0"
+license = "MIT OR Apache-2.0"
+authors = ["SSIT2051"]
+description = "Unified EssentialsX + LuckPerms plugin for PumpkinMC (WASM component)"
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+pumpkin-plugin-api = "0.2.1"
+tracing = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+config = { version = "0.14", features = ["toml", "yaml"], default-features = false }
+toml = "0.8"
+serde_yaml = "0.9"
+thiserror = "1.0"
+fs2 = { version = "0.4", optional = true }
+rusqlite = { version = "0.31", features = ["bundled"], optional = true }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], optional = true }
+uuid = { version = "1.0", features = ["serde", "v4"], optional = true }
+anyhow = "1.0"
+async-trait = "0.1"
+regex = "1.10"
+lazy_static = "1.4"
+cron = "0.17"
+dashmap = "6.2"
+chrono = { version = "0.4", features = ["std", "serde"] }
+
+# Native-only dependencies (not compatible with wasm32-wasip2)
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time", "signal", "net", "fs", "process"], default-features = false }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "mysql", "postgres"], default-features = false }
+redis = { version = "0.23", features = ["tokio-comp", "connection-manager"], default-features = false }
+tokio-cron-scheduler = { version = "0.15", features = ["signal"], default-features = false }
+
+# WASM target - minimal tokio features only
+[target.wasm32-wasip2.dependencies]
+tokio = { version = "1.54", features = ["sync", "macros", "io-util", "rt", "time"], default-features = false }
+tokio-cron-scheduler = { version = "0.15", default-features = false }
+
+[features]
+default = []
+sqlite = ["rusqlite"]
+http = ["reqwest", "uuid"]
+file-locking = ["fs2"]
+signal = []
+cron-scheduler = []
+full-sqlx = []
 
 [profile.release]
 lto = true
